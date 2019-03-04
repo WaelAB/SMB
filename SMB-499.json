@@ -1,0 +1,27 @@
+{
+  "Flag" : false,
+  "Medicine" : {
+    "Container" : 1,
+    "Dosage" : "1 pill",
+    "DosesNum" : 3,
+    "ID" : 1,
+    "InStock" : true,
+    "Name" : "Panadol",
+    "TakenStatus" : {
+      "First": "False",
+      "Second": "False",
+      "Third" : "False"
+    },
+    "Times" : {
+    "First":"7:00",
+    "Second": "15:00",
+    "Third" :"23:00"
+    }
+    ,
+    "Type" : "pills"
+  },
+  "User" : {
+    "ID" : 1,
+    "Name" : "Ahmed"
+  }
+}
