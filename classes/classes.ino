@@ -12,6 +12,7 @@ void setup() {// main class , will add later
   med[0].setMedName("Panadol");
   med[0].setType("Pills");
   med[0].setDosage("1 pill");
+  med[0].setContainerNum(1);
   med[0].setStockState(true);
   med[0].setTakenState(false);
   
@@ -31,9 +32,9 @@ void loop() {
   Serial.println(med[0].getMedName());
   Serial.println(med[0].getType());
   Serial.println(med[0].getDosage());
+  Serial.println(med[0].getContainerNum());
   Serial.println(med[0].getStockState());
   Serial.println(med[0].getTakenState());
-  
   Serial.println(med[0].getDosesNum());
   
   for(int i = 0; i<med[0].getDosesNum();i++){

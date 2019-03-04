@@ -5,9 +5,11 @@ class medicine {
   String Type;// type of the medicine. ex:syrup , pill
   String Dosage;// the amount of each dose
   int DosesNum; // number of doses per day
+  int ContainerNum; // number of the container
   boolean InStock;// to check if the medicine still available or not
   boolean Taken;//to check if the user took his medicine or not
   String Times[];// to store the times for single medicine
+  
 
    public:
           void setMedID(int id){
@@ -41,6 +43,12 @@ class medicine {
           int getDosesNum(){
             return DosesNum;
           }
+          void setContainerNum(int num){
+            ContainerNum=num;
+          }
+          int getContainerNum(){
+            return ContainerNum;
+          }
           void setStockState(boolean state){
             InStock=state;
           }
@@ -62,4 +70,3 @@ class medicine {
           
           
 };
-
