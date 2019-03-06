@@ -3,12 +3,12 @@ String s;
 void setup() {
  Wire.begin(8);                /* join i2c bus with address 8 */
  Wire.onReceive(receiveEvent); /* register receive event */
- Wire.onRequest(requestEvent); /* register request event */
+// Wire.onRequest(requestEvent); 
  Serial.begin(9600);           /* start serial for debug */
 }
 
 void loop() {
- receiveEvent(20);
+ receiveEvent(40);
 }
 
 // function that executes whenever data is received from master
@@ -20,7 +20,7 @@ String MedType;
 String Dosage;
 int DosageNum=0 ;
 boolean Tstate;
-String Time;
+int t =0 ;
 
 char c ;
 int strLen=0;
@@ -61,27 +61,20 @@ void receiveEvent(int HowMany) {
   }
   Serial.println("Med Type"+MedType);
 
+
+
   DosageNum = Wire.read();
-  Serial.print("Dosage Num");
-  Serial.println(DosageNum);
 
-for (int i =0 ; i<DosageNum ;i++){
-  strLen = Wire.read();
-  for (int j = 0 ; j<strLen ; j++){
-    c =Wire.read();
-    Time +=c;
-  }
-   Serial.println(Time);
-   Time = "";
-}
-
+  
+Serial.println(DosageNum);
     
-
-for (int i =0 ; i<DosageNum ;i++){
-  Tstate = Wire.read();
-  Serial.println(Tstate);
-}
-
+ 
+  
+   for(int i =0 ; i<DosageNum ; i++){
+    t = Wire.read();
+   Serial.println(t);
+   }
+   
  Serial.println();             /* to newline */
 }
 }
@@ -89,7 +82,7 @@ for (int i =0 ; i<DosageNum ;i++){
 
 
 // function that executes whenever data is requested from master
-void requestEvent() {
+/*void requestEvent() {
   int i  = 9;
- Wire.write(i);  /*send string on request */
-}
+ Wire.write(i);  /*send string on request 
+}*/
