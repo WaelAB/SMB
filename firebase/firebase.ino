@@ -69,28 +69,51 @@ void loop() {
     Wire.write(Type.charAt(i));
   }
   int DosageNum=Firebase.getInt("/Medicine/DosesNum");
+  Serial.println(DosageNum);
   Wire.write(DosageNum);
   String d="/Medicine/Times/Dose";
   String s="/Medicine/TakenStatus/State";
-  for (int i=0;i<DosageNum;i++){
-    String Dosepath=d+i;
+  
+for (int i=0;i<DosageNum;i++){
+  String Dosepath=d+i;
+  int fDose=Firebase.getInt(Dosepath);
+  Wire.write(fDose);
+}
+  
+  /**
+    String Dosepath=d+0;
     Serial.println(Dosepath);
-    String fDose=Firebase.getString(Dosepath);
+    int fDose=Firebase.getInt(Dosepath);
     Serial.println(fDose);
-    len=fDose.length();
+    Wire.write(fDose);
+    Dosepath=d+1;
+    Serial.println(Dosepath);
+    fDose=Firebase.getInt(Dosepath);
+    Serial.println(fDose);
+    Wire.write(fDose);
+    Dosepath=d+2;
+    Serial.println(Dosepath);
+    fDose=Firebase.getInt(Dosepath);
+    Serial.println(fDose);
+   
+  
+   /** len=fDose.length();
     Serial.println(len);
-    Wire.write(len);
+    Wire.write(len);**/
+    /**
     for(int j=0;j<len;j++){
+      Serial.print(fDose.charAt(j));
       Wire.write(fDose.charAt(j));
+      len=0;
     }  
-  }
-  for (int i=0;i<DosageNum;i++){
+  }**/
+  /**for (int i=0;i<DosageNum;i++){
     String Statuspath=s+i;
     Serial.println(Statuspath);
     boolean fStatus=Firebase.getBool(Statuspath);
     Serial.println(fStatus);
     Wire.write(fStatus);
-  }
+  }**/
   
   
   /**boolean fStatus=Firebase.getBool("/Medicine/TakenStatus/First");
