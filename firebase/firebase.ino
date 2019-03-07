@@ -5,9 +5,9 @@
 // Set these to run example.
 #define FIREBASE_HOST "smb-499-8a7d2.firebaseio.com" // DataBase Host Name
 #define FIREBASE_AUTH "XGKBIJ5TbwDq6aCXF85J2pe77VhcpVXVTohI0uzZ" //token to acceses the DB
-#define WIFI_SSID "Connect_4G_Router" // name of the router 
-#define WIFI_PASSWORD "Aa2468Aa" // password of the router
-
+#define WIFI_SSID "Moodyzz" // name of the router 
+#define WIFI_PASSWORD "14161416" // password of the router
+int len;
 void setup() {
   Serial.begin(9600);
   Wire.begin(D1, D2); /* join i2c bus with SDA=D1 and SCL=D2 of NodeMCU */
@@ -23,29 +23,20 @@ void setup() {
   Serial.println(WiFi.localIP());// IP address
   //connect to FireBase
   Firebase.begin(FIREBASE_HOST, FIREBASE_AUTH);
-}
-int len;
-
-
-void loop() {
   Wire.beginTransmission(8); // the adress to send should be 8 in both ESP/Arduino
   //getting information from the data base
-
+  int userID=Firebase.getInt("/User/ID");
+  Wire.write(userID);
+  String uName=Firebase.getString("/User/Name"); // getting the username
+  len=uName.length();// lenght of the username
   
-  String uName=Firebase.getString("/User/Name"); // username
-  len=uName.length();
-  
-  Wire.write(len);
+  Wire.write(len); // sending the lenght of the username
   for (int i=0;i<len;i++){
-    Wire.write(uName.charAt(i));
+    Wire.write(uName.charAt(i));// sending character by character
   }
  
-
-
-  
-  //Wire.write(uName);  /* sends hello string */
-  int ID=Firebase.getInt("/User/ID"); // ID of the user
-  Wire.write(ID);
+  int containerNum=Firebase.getInt("/Medicine/container");
+  Wire.write(containerNum);
   String MedName=Firebase.getString("/Medicine/Name"); 
   len=MedName.length();
   Wire.write(len);
@@ -62,13 +53,8 @@ void loop() {
     Wire.write(Dosage.charAt(i));
   }
   
-  String Type=Firebase.getString("/Medicine/Type");
-  len=Type.length();
-  Wire.write(len);
-   for (int i=0;i<len;i++){
-    Wire.write(Type.charAt(i));
-  }
-  int DosageNum=Firebase.getInt("/Medicine/DosesNum");
+ 
+int DosageNum=Firebase.getInt("/Medicine/DosesNum");
   Serial.println(DosageNum);
   Wire.write(DosageNum);
   String d="/Medicine/Times/Dose";
@@ -77,60 +63,73 @@ void loop() {
 for (int i=0;i<DosageNum;i++){
   String Dosepath=d+i;
   int fDose=Firebase.getInt(Dosepath);
-  Wire.write(fDose);
-}
-  
-  /**
-    String Dosepath=d+0;
-    Serial.println(Dosepath);
-    int fDose=Firebase.getInt(Dosepath);
-    Serial.println(fDose);
-    Wire.write(fDose);
-    Dosepath=d+1;
-    Serial.println(Dosepath);
-    fDose=Firebase.getInt(Dosepath);
-    Serial.println(fDose);
-    Wire.write(fDose);
-    Dosepath=d+2;
-    Serial.println(Dosepath);
-    fDose=Firebase.getInt(Dosepath);
-    Serial.println(fDose);
+Wire.write(fDose);
+  Serial.print(fDose);
    
-  
-   /** len=fDose.length();
-    Serial.println(len);
-    Wire.write(len);**/
-    /**
-    for(int j=0;j<len;j++){
-      Serial.print(fDose.charAt(j));
-      Wire.write(fDose.charAt(j));
-      len=0;
-    }  
-  }**/
-  /**for (int i=0;i<DosageNum;i++){
-    String Statuspath=s+i;
-    Serial.println(Statuspath);
-    boolean fStatus=Firebase.getBool(Statuspath);
-    Serial.println(fStatus);
-    Wire.write(fStatus);
-  }**/
-  
-  
-  /**boolean fStatus=Firebase.getBool("/Medicine/TakenStatus/First");
-  String sDose=Firebase.getString("/Medicine/Times/Second");
-  boolean sStatus=Firebase.getBool("/Medicine/TakenStatus/Second");
-  String tDose=Firebase.getString("/Medicine/Times/Third");
-  boolean tStatus=Firebase.getBool("/Medicine/TakenStatus/Third");
-  int cont=Firebase.getInt("/Medicine/Container");
+  }
   boolean inStock=Firebase.getBool("/Medicine/InStock");
-  Serial.println(uName);
-  Serial.println(cont);
-  Serial.println(inStock);
-  Serial.println(tDose);
-  Serial.println(Type);
-  **/
-  Serial.print("end");
-  Wire.endTransmission(); 
-  delay(5000);
-
+  Wire.write(inStock);
+ Wire.endTransmission(); 
+ Serial.print("end");
 }
+
+
+
+void loop() {
+  
+  boolean flag=Firebase.getBool("/Flag");
+  if (flag==1){
+     Wire.beginTransmission(8); // the adress to send should be 8 in both ESP/Arduino
+  //getting information from the data base
+  int userID=Firebase.getInt("/User/ID");
+  Wire.write(userID);
+  String uName=Firebase.getString("/User/Name"); // getting the username
+  len=uName.length();// lenght of the username
+  
+  Wire.write(len); // sending the lenght of the username
+  for (int i=0;i<len;i++){
+    Wire.write(uName.charAt(i));// sending character by character
+  }
+ 
+  int containerNum=Firebase.getInt("/Medicine/container");
+  Wire.write(containerNum);
+  String MedName=Firebase.getString("/Medicine/Name"); 
+  len=MedName.length();
+  Wire.write(len);
+  for (int i=0;i<len;i++){
+    Wire.write(MedName.charAt(i));
+  }
+  
+  
+  String Dosage=Firebase.getString("/Medicine/Dosage");
+  len=Dosage.length();
+  
+  Wire.write(len);
+  for (int i=0;i<len;i++){
+    Wire.write(Dosage.charAt(i));
+  }
+  
+ 
+int DosageNum=Firebase.getInt("/Medicine/DosesNum");
+  Serial.println(DosageNum);
+  Wire.write(DosageNum);
+  String d="/Medicine/Times/Dose";
+  String s="/Medicine/TakenStatus/State";
+  
+for (int i=0;i<DosageNum;i++){
+  String Dosepath=d+i;
+  int fDose=Firebase.getInt(Dosepath);
+Wire.write(fDose);
+  Serial.print(fDose);
+   
+  }
+  boolean inStock=Firebase.getBool("/Medicine/InStock");
+  Wire.write(inStock);
+ Wire.endTransmission(); 
+ Serial.print("end");
+ 
+ Firebase.setBool("/Flag", false);
+  }
+}
+
+
