@@ -1,5 +1,4 @@
 #include <Wire.h>
-String s;
 void setup() {
  Wire.begin(8);                /* join i2c bus with address 8 */
  Wire.onReceive(receiveEvent); /* register receive event */
@@ -8,81 +7,82 @@ void setup() {
 }
 
 void loop() {
- receiveEvent(40);
+ receiveEvent();
 }
 
 // function that executes whenever data is received from master
 
-String uName ;
-int uID =0;
-String MedName;
-String MedType;
-String Dosage;
-int DosageNum=0 ;
-boolean Tstate;
-int t =0 ;
-
-char c ;
-int strLen=0;
-
-
-void receiveEvent(int HowMany) {
- while (0 <Wire.available()) {
+void receiveEvent() {
   
-    strLen = Wire.read();      /* receive byte as a character */  
+String uName ; // User Name
+int uID; // User ID
+String MedName; // Medicine Name
+String Dosage; // Dosage amount
+int DosageNum=0 ; // The number of doses
+boolean InStock; 
+int DTime =0  ; // Dosage Time
+int ConNum =0 ; // Container Number
+char c ; // Temporary varible to store chars
+int strLen=0; // Temporary varible to store string length
+
+ while (0 <Wire.available()) {  
+    
+    uID = Wire.read(); // Receive and store the user ID from the esp
+    Serial.println(uID);
+    //******************* 
+    
+    strLen = Wire.read();      
     for (int i = 0; i<strLen ; i++){
       c= Wire.read();
       uName += c;
     }
     Serial.println("User Name: "+uName);
+    uName ="";
+    //*******************
     
-    uID = Wire.read();  
-    Serial.print ("User ID: ");
-    Serial.println (uID);
-    
+    ConNum = Wire.read();
+    Serial.println(ConNum);
+    //*******************
+      
     strLen = Wire.read();
      for (int i = 0; i<strLen ; i++){
-      c= Wire.read();
-      MedName += c;
+     c= Wire.read(); // Receive and store the Medicine name value char by char
+     MedName += c;   // And store it into the Dosage varriable
+      
     }
     Serial.println("MedName: "+MedName);
+    MedName= "";
+    //*******************
     
     strLen = Wire.read();
      for (int i = 0; i<strLen ; i++){
-      c= Wire.read();
-      Dosage += c;
+      c= Wire.read(); // Receive and store the Dosage amount value char by char
+      Dosage += c;    // And store it into the Dosage varriable
   }
-  Serial.println("Dosage: "+Dosage);
-  
-  strLen = Wire.read();
-  for(int i = 0 ; i<strLen; i++){
-      c= Wire.read();
-      MedType += c;
-  }
-  Serial.println("Med Type"+MedType);
+    Serial.println("Dosage: "+Dosage); 
+    Dosage = "";
+    //*******************
 
-
-
-  DosageNum = Wire.read();
-
-  
-Serial.println(DosageNum);
-    
- 
-  
-   for(int i =0 ; i<DosageNum ; i++){
-    t = Wire.read();
-   Serial.println(t);
+  DosageNum = Wire.read(); // Receive and store the number of doses value from the esp
+  Serial.println(DosageNum);
+  for(int i =0 ; i<DosageNum ; i++){
+  DTime = Wire.read(); // Receive and store the Dosage time value from the esp
+  Serial.println(DTime);
    }
-   
- Serial.println();             /* to newline */
+  //*******************
+  
+  InStock = Wire.read(); // Read the In stock value from the esp
+  Serial.print("In Stock ? ");
+  Serial.println(InStock);
+  
+  Serial.println();            //  to newline 
 }
 }
 
 
-
+// Will use this later
 // function that executes whenever data is requested from master
 /*void requestEvent() {
-  int i  = 9;
+ int i  = 9;
  Wire.write(i);  /*send string on request 
 }*/
