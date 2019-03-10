@@ -16,7 +16,7 @@ public:
       //Serial.println(temp);
       if (temp > 24) { // if the temperature is more than 24
         digitalWrite(relayPin, LOW); // turn the cooler on
-      } else  { // if the temprature is less than 18
+      } else if (temp> 18){ // if the temprature is less than 18
         digitalWrite(relayPin, HIGH);// Turn the cooler off
       }
     }
