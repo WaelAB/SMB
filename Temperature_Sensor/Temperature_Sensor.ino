@@ -12,5 +12,5 @@ void loop() {
    
    Serial.println(temp);
       
-   delay(60000);                   // wait for a minute
+   delay(1000);                   // wait for a minute
 }
