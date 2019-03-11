@@ -5,8 +5,8 @@
 // Set these to run example.
 #define FIREBASE_HOST "smb-499-8a7d2.firebaseio.com" // DataBase Host Name
 #define FIREBASE_AUTH "XGKBIJ5TbwDq6aCXF85J2pe77VhcpVXVTohI0uzZ" //token to acceses the DB
-#define WIFI_SSID "Moodyzz" // name of the router 
-#define WIFI_PASSWORD "14161416" // password of the router
+#define WIFI_SSID "Connect_4G_Router" // name of the router 
+#define WIFI_PASSWORD "Aa2468Aa" // password of the router
 int len;
 void setup() {
   Serial.begin(9600);

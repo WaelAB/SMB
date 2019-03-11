@@ -4,11 +4,14 @@
 #include <LiquidCrystal_I2C.h>
 #include "HX711.h"
 #include "Cooler.h"
+#include <DS1302.h>
 
 HX711 scale(3, 2);// digital pins
+DS1302 rtc(5, 6, 7);// digital pins =RST, DAT, CLK
 float calibration_factor = 2000; // this calibration factor is adjusted according to my load cell
-,
-boolean reply = false;
+float units; // where the weight is stored
+int buzzer = 4; // digital pin of the buzzer
+
 
 LiquidCrystal_I2C lcd(0x27, 20, 4);
 
@@ -26,20 +29,30 @@ int DTime = 0  ; // Dosage Time
 int ConNum = 0 ; // Container Number
 char c ; // Temporary varible to store chars
 int strLen = 0; // Temporary varible to store string length
+String SCTime; // current time in string
 
+String tTime;
 float firstWeight = 0.0;
 float secondWeight = 0.0;
 
 void setup() {
 
   Serial.begin(9600);           // start serial for debug
+
   lcd.init(); // Start the LCD
   lcd.backlight(); // Trun the light of the screen
   Wire.begin(8);                // join i2c bus with address 8 to the esp
   Wire.onReceive(receiveEvent); // register receive event from esp
   Wire.onRequest(confirm); // send confirmation to esp
   pinMode(cool.relayPin, OUTPUT);
+  pinMode (buzzer, OUTPUT) ; // the buzzer pin should output the buzzer sound
   digitalWrite(cool.relayPin, LOW);
+  //This block of code is supposed to run for the first time only to set the time and can be discarded
+  //    until you want to set it up again
+  rtc.halt(false); // Set the clock to run-mode, and disable the write protection
+  rtc.writeProtect(false);
+  // The following lines can be commented out to use the values already stored in the DS1302
+  rtc.setTime(8, 59, 0);   // Set the time to 12:00:00 (24hr format)
 
   SettingUp();
 
@@ -49,10 +62,38 @@ void loop() {
 
   cool.CheckTemp();
   receiveEvent();
+  tTime = rtc.getTimeStr();
+  Serial.println(tTime);
+  delay(2000);
+  for (int j = 0; j < 2; j++) {
+    SCTime += tTime[j];
+  }
+  int CTime = SCTime.toInt();
+  tTime="";
+  SCTime="";
+  Serial.println(CTime);
+  Serial.print("First loop");
+    for (int x = 0; x < 3; x++) {
+      Serial.print("Doses num ");
+     int DN= med[0].getDosesNum();
+      Serial.println(DN);
+      Serial.print("med time ");
+      int medicineTime=med[0].getTimes(x);
+      Serial.println(medicineTime);
+      if (CTime == medicineTime) {
+        Serial.print("ENTERED");
+        lcd.println("Your medicine");
+        lcd.print("time has come");
+        AlarmTone();
+
+
+      }
+    }
+  
   // here we will write wieght sensor code
   // check the time and if the the current time match the doses time go to next statment
   // turn on the led lights
-  // start the piso 
+  // start the piso
   //print on the LCD
   // weight = scale.get_units(), 10;
   // units = scale.get_units(), 10;
@@ -60,13 +101,13 @@ void loop() {
   // if (units - current <.10){
   // do nothing because the user hasn't took the medicine yet
   //}
-   //  units= scale.get_units(), 10;
-   // if (weight - units >30 && unit >0.10){// its mean that the diffirence between the old weight is more than 30 mg and the weight senor is not eampty
-   //break;
-   //}
+  //  units= scale.get_units(), 10;
+  // if (weight - units >30 && unit >0.10){// its mean that the diffirence between the old weight is more than 30 mg and the weight senor is not eampty
+  //break;
   //}
   //}
-  // update the state and send it to esp 
+  //}
+  // update the state and send it to esp
 
 }
 
@@ -123,6 +164,7 @@ void receiveEvent() {
 
     DosageNum = Wire.read(); // Receive and store the number of doses value from the esp
     Serial.println(DosageNum);
+    med[ConNum].setDosesNum(DosageNum);
     for (int i = 0 ; i < DosageNum ; i++) {
       DTime = Wire.read(); // Receive and store the Dosage time value from the esp
       med[ConNum].setTimes(DTime, i);
@@ -136,7 +178,7 @@ void receiveEvent() {
     Serial.print("In Stock ? ");
     Serial.println(med[ConNum].getStockState());
 
-   confirm();
+    confirm();
 
     Serial.println();            //  to newline
     user[uID].setMed(med[ConNum]);
@@ -166,27 +208,35 @@ void SettingUp() {
   lcd.print(" a medicine");
   delay(3000);
   lcd.clear();
-  
-    scale.set_scale(calibration_factor); //Adjust to this calibration factor
+
+  scale.set_scale(calibration_factor); //Adjust to this calibration factor
+
+  units = scale.get_units(), 10;
+  while (units < 0.10) {// Wait untill the user to put his medicine
 
     units = scale.get_units(), 10;
-    while (units < 0.10) {// Wait untill the user to put his medicine
-
-      units = scale.get_units(), 10;
-      if (units < 0)
-      {
-        units = 0.00;// to avoid getting minus weight values
-      }
+    if (units < 0)
+    {
+      units = 0.00;// to avoid getting minus weight values
     }
+  }
 
-    firstWeight = units;
-    Serial.print(firstWeight);
-    Serial.print(" grams");
-  
+  firstWeight = units;
+  Serial.print(firstWeight);
+  Serial.print(" grams");
+
 
 
 }
+void AlarmTone() { //this method will activate the buzzer and play a tone
 
+  tone(buzzer, 1000);
+  delay(500);
+  tone(buzzer, 1500);
+  delay(500);
+  tone(buzzer, 2000);
+  delay(500);
+}
 // Will use this later
 // function that executes whenever data is requested from master
 /*void requestEvent() {
