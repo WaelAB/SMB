@@ -7,8 +7,7 @@
 
 HX711 scale(3, 2);// digital pins
 float calibration_factor = 2000; // this calibration factor is adjusted according to my load cell
-float units;// where the wight is stored
-
+,
 boolean reply = false;
 
 LiquidCrystal_I2C lcd(0x27, 20, 4);
@@ -50,6 +49,24 @@ void loop() {
 
   cool.CheckTemp();
   receiveEvent();
+  // here we will write wieght sensor code
+  // check the time and if the the current time match the doses time go to next statment
+  // turn on the led lights
+  // start the piso 
+  //print on the LCD
+  // weight = scale.get_units(), 10;
+  // units = scale.get_units(), 10;
+  //while (true){
+  // if (units - current <.10){
+  // do nothing because the user hasn't took the medicine yet
+  //}
+   //  units= scale.get_units(), 10;
+   // if (weight - units >30 && unit >0.10){// its mean that the diffirence between the old weight is more than 30 mg and the weight senor is not eampty
+   //break;
+   //}
+  //}
+  //}
+  // update the state and send it to esp 
 
 }
 
@@ -149,7 +166,7 @@ void SettingUp() {
   lcd.print(" a medicine");
   delay(3000);
   lcd.clear();
-  /*
+  
     scale.set_scale(calibration_factor); //Adjust to this calibration factor
 
     units = scale.get_units(), 10;
@@ -165,7 +182,7 @@ void SettingUp() {
     firstWeight = units;
     Serial.print(firstWeight);
     Serial.print(" grams");
-  */
+  
 
 
 }
