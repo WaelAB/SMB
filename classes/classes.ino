@@ -30,11 +30,12 @@ int ConNum = 0 ; // Container Number
 char c ; // Temporary varible to store chars
 int strLen = 0; // Temporary varible to store string length
 String SCTime; // current time in string
-
+int timeTesting = 0;
 String tTime;
-float firstWeight = 0.0;
-float secondWeight = 0.0;
-
+float firstWeight=0.0;
+float CurrentWeight=0.0;
+float oldWeight=0.0;
+float outOfStock =0.0;
 void setup() {
 
   Serial.begin(9600);           // start serial for debug
@@ -63,52 +64,47 @@ void loop() {
   cool.CheckTemp();
   receiveEvent();
   tTime = rtc.getTimeStr();
-  Serial.println(tTime);
+  //Serial.println(tTime);
   delay(2000);
-  for (int j = 0; j < 2; j++) {
+  /**for (int j = 0; j < 2; j++) {
     SCTime += tTime[j];
-  }
+  }**/
   int CTime = SCTime.toInt();
-  tTime="";
-  SCTime="";
-  Serial.println(CTime);
-  Serial.print("First loop");
-    for (int x = 0; x < 3; x++) {
-      Serial.print("Doses num ");
-     int DN= med[0].getDosesNum();
-      Serial.println(DN);
-      Serial.print("med time ");
-      int medicineTime=med[0].getTimes(x);
-      Serial.println(medicineTime);
-      if (CTime == medicineTime) {
-        Serial.print("ENTERED");
-        lcd.println("Your medicine");
-        lcd.print("time has come");
+  tTime = "";
+  SCTime = "";
+  //Serial.println(CTime);
+  
+ // for (int x = 0; x < 3; x++) {
+    Serial.println (timeTesting);
+    if (timeTesting == 9) {
+      
+      Serial.println("ENTERED at 9");
+      lcd.println("Your medicine");
+      
+      lcd.print("time has come");
+      oldWeight = scale.get_units(), 10;// weight before the alarm
+      CurrentWeight = scale.get_units(), 10;
+      while (true) {
         AlarmTone();
-
-
+         CurrentWeight = scale.get_units(), 10;
+         Serial.print ("Current");
+         Serial.println(CurrentWeight);
+         delay (1000);
+        if (oldWeight - CurrentWeight > 0.30 && CurrentWeight > 0.20 ) { // 20 is threshold if we use a medicne packet
+          Serial.println(" YOU HAVE TOOK YOUR MEDICINE !");
+          break;
+          // update status on Firebase
+        }
       }
     }
-  
-  // here we will write wieght sensor code
-  // check the time and if the the current time match the doses time go to next statment
-  // turn on the led lights
-  // start the piso
-  //print on the LCD
-  // weight = scale.get_units(), 10;
-  // units = scale.get_units(), 10;
-  //while (true){
-  // if (units - current <.10){
-  // do nothing because the user hasn't took the medicine yet
-  //}
-  //  units= scale.get_units(), 10;
-  // if (weight - units >30 && unit >0.10){// its mean that the diffirence between the old weight is more than 30 mg and the weight senor is not eampty
-  //break;
-  //}
-  //}
-  //}
-  // update the state and send it to esp
-
+ // }
+  timeTesting++;
+ // now we will check if the medicine is out of stock 
+ outOfStock=scale.get_units(), 10;
+if (outOfStock <0.20){
+  Serial.println("Your medicine is out stock");
+}
+ 
 }
 
 // function that executes whenever data is received from master
@@ -215,6 +211,7 @@ void SettingUp() {
   while (units < 0.10) {// Wait untill the user to put his medicine
 
     units = scale.get_units(), 10;
+    delay(500);
     if (units < 0)
     {
       units = 0.00;// to avoid getting minus weight values
@@ -236,6 +233,7 @@ void AlarmTone() { //this method will activate the buzzer and play a tone
   delay(500);
   tone(buzzer, 2000);
   delay(500);
+  
 }
 // Will use this later
 // function that executes whenever data is requested from master
