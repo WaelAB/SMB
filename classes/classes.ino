@@ -237,7 +237,7 @@ void SettingUp() {
   units = scale.get_units(), 10;
   while (units < 0.10) {// Wait untill the user to put his medicine
     units = scale.get_units(), 10;
-    delay(500);
+    delay(1000);
     if (units < 0)
     {
       units = 0.00;// to avoid getting minus weight values
