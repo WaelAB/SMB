@@ -30,10 +30,9 @@ int ConNum = 0 ; // Container Number
 char c ; // Temporary varible to store chars
 int strLen = 0; // Temporary varible to store string length
 
-String SCTime; // current time in string
-int DTime = 0  ; // Dosage Time
-int timeTesting = 0;// Temporary
-String tTime;
+String HourStr;
+int HourInt = 0;
+int AlarmHr = 2;
 
 float firstWeight = 0.0;
 float CurrentWeight = 0.0;
@@ -59,49 +58,37 @@ void setup() {
   pinMode(cool.relayPin, OUTPUT);// Realy pin
   pinMode (buzzer, OUTPUT) ; // the buzzer pin should output the buzzer sound
   digitalWrite(cool.relayPin, LOW);// Realy pin that sould be low( powered off) by default
-  
+
   /*
     while (response < 0) {// to make sure both the arduino and esp are powered on so no error ouccors
       HandshakeSND();
       HandshakeRCV();
     }
   */
-  
-  /*
-    //This block of code is supposed to run for the first time only to set the time and can be discarded
-    //    until you want to set it up again
-    rtc.halt(false); // Set the clock to run-mode, and disable the write protection
-    rtc.writeProtect(false);
-    // The following lines can be commented out to use the values already stored in the DS1302
-    rtc.setTime(8, 59, 0);   // Set the time to 12:00:00 (24hr format)
-  */
+
+
+  if (! rtc.begin()) {// Error  handling
+    Serial.println("Couldn't find RTC");
+    while (1);
+  }
 
   SettingUp();
 }
 
 void loop() {
-
+  
+  DateTime now = rtc.now(); // Creating object of DateTime
   cool.CheckTemp();
   receiveEvent();
+  
+  HourStr = String(now.hour(), DEC); // Getting Hours is save into String
+  HourInt = HourStr.toInt(); // convert string time into integer
 
-  tTime = rtc.getTimeStr();
-  //Serial.println(tTime);
-  delay(2000);
-  /**for (int j = 0; j < 2; j++) {
-    SCTime += tTime[j];
-    }**/
-  int CTime = SCTime.toInt();
-  tTime = "";
-  SCTime = "";
-  //Serial.println(CTime);
-
-  // for (int x = 0; x < 3; x++) {
-  Serial.println (timeTesting);
-  if (timeTesting == 9) {// 9 is Just to test the condition
+  if (HourInt == AlarmHr ) {// 9 is Just to test the condition
     Serial.println("ENTERED at 9");
     lcd.clear();
     lcd.println("Your medicine");
-    lcd.setCursor(0,1);
+    lcd.setCursor(0, 1);
     lcd.print("time has come");
 
     oldWeight = scale.get_units(), 10;// weight before the alarm
@@ -156,7 +143,7 @@ void receiveEvent() {
       Serial.println(user[uID].getUname());
       uName = "";
       //*******************
-      
+
       ConNum = Wire.read();
       med[ConNum].setContainerNum(ConNum);
       Serial.println(med[ConNum].getContainerNum());
