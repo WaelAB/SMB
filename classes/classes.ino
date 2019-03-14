@@ -4,11 +4,11 @@
 #include <LiquidCrystal_I2C.h> // LCD 
 #include "HX711.h" // load cell and aplifire
 #include "Cooler.h"// Cooler class
-#include <DS1302.h>// Rea Time Clock
+#include "RTClib.h" // include the clock libarary
 
 HX711 scale(3, 2);// digital pins = DT ,SCK
-DS1302 rtc(5, 6, 7);// digital pins =RST, DAT, CLK
-
+//DS1302 rtc(5, 6, 7);// digital pins =RST, DAT, CLK
+RTC_DS1307 rtc;
 int buzzer = 4; // digital pin of the buzzer
 float calibration_factor = 2000; // this calibration factor is adjusted according to my load cell
 float units; // where the weight is stored
@@ -113,7 +113,7 @@ void loop() {
   }
   // }
 
-  timeTesting++;// it's just temporary
+  //timeTesting++;// it's just temporary
 
   // now we will check if the medicine is out of stock
   outOfStock = scale.get_units(), 10;
@@ -174,8 +174,8 @@ void receiveEvent() {
       Serial.println(DosageNum);
       med[ConNum].setDosesNum(DosageNum);
       for (int i = 0 ; i < DosageNum ; i++) {
-        DTime = Wire.read(); // Receive and store the Dosage time value from the esp
-        med[ConNum].setTimes(DTime, i);
+//        DTime = Wire.read(); // Receive and store the Dosage time value from the esp
+ //       med[ConNum].setTimes(DTime, i);
         Serial.print("Time: ");
         Serial.println(med[ConNum].getTimes(i));
       }
