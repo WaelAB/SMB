@@ -99,7 +99,9 @@ void loop() {
   Serial.println (timeTesting);
   if (timeTesting == 9) {// 9 is Just to test the condition
     Serial.println("ENTERED at 9");
+    lcd.clear();
     lcd.println("Your medicine");
+    lcd.setCursor(0,1);
     lcd.print("time has come");
 
     oldWeight = scale.get_units(), 10;// weight before the alarm
@@ -120,6 +122,7 @@ void loop() {
         //
       }
     }
+    lcd.clear();
   }
   // }
 
