@@ -25,9 +25,9 @@ void setup() {
   Firebase.begin(FIREBASE_HOST, FIREBASE_AUTH);
   Wire.beginTransmission(8);
 
-int confirm = 0;
+  int confirm = 0;
   int responce = 0;
-  while (responce == 0) {
+  /**while (responce == 0) {
     Wire.requestFrom(8, 1);
     while (Wire.available()) {
       responce = Wire.read();
@@ -36,25 +36,27 @@ int confirm = 0;
     }
     Serial.println(responce);
      delay(500);
-  }
-  Wire.write(1);
-
-
-   while (confirm == 0) {
-  Serial.println("confirm loop");
-  SettingUp();
-  delay(1000);
-  Wire.requestFrom(8, 1);
-  while (Wire.available()) {
-    Serial.println("responce nested loop");
-    confirm = Wire.read();
-    Serial.print(confirm);
-    if (confirm == 1) {
-      break;
     }
-  }
+    Wire.write(1);**/
 
-}
+
+  while (confirm == 0) {
+    Serial.println("confirm loop");
+    
+    SettingUp();
+    delay(1000);
+    Wire.requestFrom(8, 1);
+    while (Wire.available()) {
+      
+      Serial.println("responce nested loop");
+      confirm = Wire.read();
+      Serial.print(confirm);
+      if (confirm == 1) {
+        break;
+      }
+    }
+
+  }
 }
 
 
@@ -65,12 +67,19 @@ void loop() {
     SettingUp();
 
     Firebase.setBool("/Flag", false);
+    while (Wire.available()) {
+      int takenTime = Wire.read();
+      boolean state = Wire.read();
+      String name = Firebase.pushInt("/logs", takenTime);
 
+    }
   }
+
 }
 void SettingUp() {
   // the adress to send should be 8 in both ESP/Arduino
   //getting information from the data base
+  Wire.beginTransmission(8);
   int userID = Firebase.getInt("/User/ID");
   Wire.write(userID);
   String uName = Firebase.getString("/User/Name"); // getting the username
