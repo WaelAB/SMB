@@ -29,6 +29,7 @@ boolean InStock; // status for medicine
 int ConNum = 0 ; // Container Number
 char c ; // Temporary varible to store chars
 int strLen = 0; // Temporary varible to store string length
+int DTime = 0;
 
 String HourStr;
 int HourInt = 0;
@@ -39,7 +40,7 @@ float CurrentWeight = 0.0;
 float oldWeight = 0.0;
 float outOfStock = 0.0;
 
-int GoodMorning = 1 ;// Message to esp initated with -1
+//int GoodMorning = 1 ;// Message to esp initated with -1
 int response = -1 ; //response from the esp
 
 void setup() {
@@ -50,8 +51,8 @@ void setup() {
   lcd.backlight(); // Trun the light of the screen
   Wire.begin(8); // join i2c bus with address 8 to the esp
 
-  //Wire.onRequest(HandshakeSND); // send confirmation to esp
-  //Wire.onReceive(HandshakeRCV); // register receive event from esp
+  //  Wire.onRequest(HandshakeSND); // send confirmation to esp
+  //  Wire.onReceive(HandshakeRCV); // register receive event from esp
   Wire.onReceive(receiveEvent); // register receive event from esp
   Wire.onRequest(confirm); // send confirmation to esp
 
@@ -62,7 +63,7 @@ void setup() {
   /*
     while (response < 0) {// to make sure both the arduino and esp are powered on so no error ouccors
       HandshakeSND();
-      HandshakeRCV();
+    response=  HandshakeRCV();
     }
   */
 
@@ -72,41 +73,52 @@ void setup() {
     while (1);
   }
 
+  receiveEvent();
   SettingUp();
 }
 
+
 void loop() {
-  
+
   DateTime now = rtc.now(); // Creating object of DateTime
   cool.CheckTemp();
   receiveEvent();
-  
+
+Serial.println(user[uID].getUname());
+Serial.println("MedName: " + med[ConNum].getMedName());
+
+
   HourStr = String(now.hour(), DEC); // Getting Hours is save into String
   HourInt = HourStr.toInt(); // convert string time into integer
 
-  if (HourInt == AlarmHr ) {// 9 is Just to test the condition
-    Serial.println("ENTERED at 9");
-    lcd.clear();
-    lcd.println("Your medicine");
-    lcd.setCursor(0, 1);
-    lcd.print("time has come");
 
-    oldWeight = scale.get_units(), 10;// weight before the alarm
-    CurrentWeight = scale.get_units(), 10;// weight after the user pick his medicine
+  for ( int i = 0 ; i < med[0].getDosesNum(); i++) {
+    if (HourInt == med[0].getTimes(i) ) {// 9 is Just to test the condition
+      Serial.println("ENTERED at 9");
+      lcd.clear();
+      lcd.println("Your medicine");
+      lcd.setCursor(0, 1);
+      lcd.print("time has come");
 
-    while (true) {
-      AlarmTone();
+      oldWeight = scale.get_units(), 10;// weight before the alarm
+      CurrentWeight = scale.get_units(), 10;// weight after the user pick his medicine
 
-      CurrentWeight = scale.get_units(), 10;// read the weight
-      Serial.print ("Current");
-      Serial.println(CurrentWeight);
-      delay (1000);
+      while (true) {
+        AlarmTone();
 
-      if (oldWeight - CurrentWeight > 0.30 && CurrentWeight > 0.20 ) { // .20 is threshold if we use a medicne packet
-        Serial.println(" YOU HAVE TOOK YOUR MEDICINE !");              // .30 treshold for the diffrerance betweem each pill
-        break;
-        // update status on Firebase
-        //
+        CurrentWeight = scale.get_units(), 10;// read the weight
+        Serial.print ("Current");
+        Serial.println(CurrentWeight);
+        delay (1000);
+
+        if (oldWeight - CurrentWeight > 0.30 && CurrentWeight > 0.20 ) { // .20 is threshold if we use a medicne packet
+          Serial.println(" YOU HAVE TOOK YOUR MEDICINE !");              // .30 treshold for the diffrerance betweem each pill
+
+          // update status on Firebase
+          Wire.write(HourInt);// Send to esp the time the medicine was taken on
+          // Wire.write(true); // true if the user took his medicine
+          break;
+        }
       }
     }
     lcd.clear();
@@ -125,9 +137,12 @@ void loop() {
 //------------------------------------------------------------
 
 void receiveEvent() {
+
   while (0 < Wire.available()) {
+    Serial.println("recive");
 
     uID = Wire.read(); // Receive and store the user ID from the esp
+    user[uID].setID(uID);
     Serial.print("User ID: ");
     Serial.println(user[uID].getID());
     //*******************
@@ -137,62 +152,62 @@ void receiveEvent() {
       c = Wire.read();
       uName += c;
     }
-    if (uName != NULL) {//This condition to make sure not reciving empty data from the esp(avoid Null pointer exception)
-      user[uID].setID(uID);
-      user[uID].setUname(uName);
-      Serial.println(user[uID].getUname());
-      uName = "";
-      //*******************
+    //   if (uName != NULL) {//This condition to make sure not reciving empty data from the esp(avoid Null pointer exception)
+    user[uID].setUname(uName);
+    Serial.println(user[uID].getUname());
+    uName = "";
+    //*******************
 
-      ConNum = Wire.read();
-      med[ConNum].setContainerNum(ConNum);
-      Serial.println(med[ConNum].getContainerNum());
-      //*******************
+    ConNum = Wire.read();
+    med[ConNum].setContainerNum(ConNum);
+    Serial.println(med[ConNum].getContainerNum());
+    //*******************
 
-      strLen = Wire.read();
-      for (int i = 0; i < strLen ; i++) {
-        c = Wire.read(); // Receive and store the Medicine name value char by char
-        MedName += c;   // And store it into the Dosage varriable
-      }
-
-      med[ConNum].setMedName(MedName);
-      Serial.println("MedName: " + med[ConNum].getMedName());
-      MedName = "";
-      //*******************
-
-      strLen = Wire.read();
-      for (int i = 0; i < strLen ; i++) {
-        c = Wire.read(); // Receive and store the Dosage amount value char by char
-        Dosage += c;    // And store it into the Dosage varriable
-      }
-      med[ConNum].setDosage(Dosage);
-      Serial.println(med[ConNum].getDosage());
-      Dosage = "";
-      //*******************
-
-      DosageNum = Wire.read(); // Receive and store the number of doses value from the esp
-      Serial.println(DosageNum);
-      med[ConNum].setDosesNum(DosageNum);
-      for (int i = 0 ; i < DosageNum ; i++) {
-//        DTime = Wire.read(); // Receive and store the Dosage time value from the esp
- //       med[ConNum].setTimes(DTime, i);
-        Serial.print("Time: ");
-        Serial.println(med[ConNum].getTimes(i));
-      }
-      //*******************
-
-      InStock = Wire.read(); // Read the In stock value from the esp
-      med[ConNum].setStockState(InStock);
-      Serial.print("In Stock ? ");
-      Serial.println(med[ConNum].getStockState());
-
-      confirm();
-
-      Serial.println();            //  to newline
-      user[uID].setMed(med[ConNum]);
+    strLen = Wire.read();
+    for (int i = 0; i < strLen ; i++) {
+      c = Wire.read(); // Receive and store the Medicine name value char by char
+      MedName += c;   // And store it into the Dosage varriable
     }
+
+    med[ConNum].setMedName(MedName);
+    Serial.println("MedName: " + med[ConNum].getMedName());
+    MedName = "";
+    //*******************
+
+    strLen = Wire.read();
+    for (int i = 0; i < strLen ; i++) {
+      c = Wire.read(); // Receive and store the Dosage amount value char by char
+      Dosage += c;    // And store it into the Dosage varriable
+    }
+    med[ConNum].setDosage(Dosage);
+    Serial.println(med[ConNum].getDosage());
+    Dosage = "";
+    //*******************
+
+    DosageNum = Wire.read(); // Receive and store the number of doses value from the esp
+    Serial.println(DosageNum);
+    med[ConNum].setDosesNum(DosageNum);
+    for (int i = 0 ; i < DosageNum ; i++) {
+      DTime = Wire.read(); // Receive and store the Dosage time value from the esp
+      med[ConNum].setTimes(DTime, i);
+      Serial.print("Time: ");
+      Serial.println(med[ConNum].getTimes(i));
+    }
+    //*******************
+
+    InStock = Wire.read(); // Read the In stock value from the esp
+    med[ConNum].setStockState(InStock);
+    Serial.print("In Stock ? ");
+    Serial.println(med[ConNum].getStockState());
+
+    confirm();
+
+    Serial.println();            //  to newline
+    user[uID].setMed(med[ConNum]);
   }
+  // }
 }
+
 //------------------------------------------------------------
 
 void confirm() {// this function will send confirmation to esp
@@ -205,8 +220,6 @@ void SettingUp() {
   scale.set_scale(); //
   scale.tare();  //Reset the scale to 0
   long zero_factor = scale.read_average(); // to remove the need of tare scale
-
-  receiveEvent();
 
   lcd.setCursor(0, 0);// First digit , First line
   lcd.print("SmartMedicalBox");
@@ -236,6 +249,7 @@ void SettingUp() {
   firstWeight = units;
   Serial.print(firstWeight);
   Serial.print(" grams");
+
 }
 //------------------------------------------------------------
 
@@ -251,13 +265,16 @@ void AlarmTone() { //this method will activate the buzzer and play a tone
 //------------------------------------------------------------
 
 void HandshakeSND() {// this function will send int to esp
-  int GoodMorning = 1;// to let it know that the arduino is powered on
-  Wire.write(GoodMorning);
-  Serial.println(GoodMorning);
+  int GM = 1;// to let it know that the arduino is powered on
+  Wire.write(GM);
+  Serial.println(GM);
 }
 
-void HandshakeRCV() {// this function will Recive int from esp
-  int response = 1;// to  know that the esp is powered on
-  response = Wire.read();
-  Serial.println(response);
+int HandshakeRCV() {// this function will Recive int from esp
+  while (0 < Wire.available()) {
+    int Rspns = 1;// to  know that the esp is powered on
+    Rspns = Wire.read();
+    Serial.println(Rspns);
+    return Rspns;
+  }
 }
