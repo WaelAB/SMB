@@ -289,18 +289,4 @@ void AlarmTone() { //this method will activate the buzzer and play a tone
   noTone(buzzer);//Stop the tone
 }
 //------------------------------------------------------------
-
-void HandshakeSND() {// this function will send int to esp
-  int GM = 1;// to let it know that the arduino is powered on
-  Wire.write(GM);
-  Serial.println(GM);
-}
-
-int HandshakeRCV() {// this function will Recive int from esp
-  while (0 < Wire.available()) {
-    int Rspns = 1;// to  know that the esp is powered on
-    Rspns = Wire.read();
-    Serial.println(Rspns);
-    return Rspns;
-  }
 }
