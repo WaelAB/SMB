@@ -79,54 +79,62 @@ void loop() {
   MinInt = MinStr.toInt();// convert string Minate into integer
   SecStr = String (now.second(), DEC);
   SecInt = SecStr.toInt();
-
-  //Serial.println(user[uID].getUname());
   
-  for ( int i = 0 ; i < med[0].getDosesNum(); i++) {
+  
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print(now.hour(), DEC);
+  lcd.print(':');
+  lcd.print(now.minute(), DEC);
+  lcd.print(':');
+  lcd.print(now.second(), DEC);
+  delay(1000);
+  //Serial.println(user[uID].getUname());
+  if (med[0].getStockState() == true) {
+    for ( int i = 0 ; i < med[0].getDosesNum(); i++) {
 
-    if (HourInt == med[0].getTimes(i) && MinInt == 18 && SecInt <= 5) { // 9 is Just to test the condition
-      Serial.println("ENTERED at 9");
-      lcd.clear();
-      lcd.println("Your medicine");
-      lcd.setCursor(0, 1);
-      lcd.print("time has come");
+      if (HourInt == med[0].getTimes(i) && MinInt == 39 && SecInt <= 5) { // 9 is Just to test the condition
+        Serial.println("ENTERED at 9");
+        lcd.clear();
+        lcd.setCursor(0, 0);
+        lcd.println("Your medicine");
+        lcd.setCursor(0, 1);
+        lcd.print("time has come");
 
-      oldWeight = scale.get_units(), 10;// weight before the alarm
-      CurrentWeight = scale.get_units(), 10;// weight after the user pick his medicine
+        oldWeight = scale.get_units(), 10;// weight before the alarm
+        CurrentWeight = scale.get_units(), 10;// weight after the user pick his medicine
 
-      tempMin = MinInt;
-      Serial.print("Temp");
-      Serial.println(tempMin);
-      while (true) {
-        AlarmTone();
+        tempMin = MinInt;
+        Serial.print("Temp");
+        Serial.println(tempMin);
+        while (true) {
+          AlarmTone();
 
-        CurrentWeight = scale.get_units(), 10;// read the weight
-        CurrentWeight = abs(CurrentWeight);
-        Serial.print ("Current");
-        Serial.println(CurrentWeight);
-        delay (1000);
+          CurrentWeight = scale.get_units(), 10;// read the weight
+          CurrentWeight = abs(CurrentWeight);
+          Serial.print ("Current");
+          Serial.println(CurrentWeight);
+          delay (1000);
 
-        if (oldWeight - CurrentWeight > 0.30 ) { // (&& CurrentWeight > 0.20 ).20 is threshold if we use a medicne packet
-          Serial.println(" YOU HAVE TOOK YOUR MEDICINE !");              // .30 treshold for the diffrerance betweem each pill
-          
-          // update status on Firebase
-          // Serial.println(HourInt);
-          // Wire.write(HourInt);
-          // logSnd(HourInt);
-          break;
+          if (oldWeight - CurrentWeight > 0.30 ) { // (&& CurrentWeight > 0.20 ).20 is threshold if we use a medicne packet
+            Serial.println(" YOU HAVE TOOK YOUR MEDICINE !");              // .30 treshold for the diffrerance betweem each pill
+
+            // update status on Firebase
+            // Serial.println(HourInt);
+            // Wire.write(HourInt);
+            // logSnd(HourInt);
+            break;
+          }
+
+          MinStr =  String(now.minute(), DEC); // Getting Minutes is save into String
+          MinInt = MinStr.toInt();
+          Serial.println (MinInt);
+          if (MinInt  - tempMin > 0) {
+            Serial.println (" Time passed and med has not taken");
+            // update on FB
+            break;
+          }
         }
-        
-        MinStr =  String(now.minute(), DEC); // Getting Minutes is save into String
-        MinInt = MinStr.toInt();
-        Serial.println (MinInt);
-        if (MinInt  - tempMin > 0) {
-          Serial.println (" Time passed and med has not taken");
-          // update on FB
-          break;
-        }
-
-        // delay(60000);
-
       }
     }
   }
@@ -137,9 +145,17 @@ void loop() {
   // now we will check if the medicine is out of stock
   outOfStock = scale.get_units(), 10;
   if (outOfStock < 0.20) {
-    Serial.println("Your medicine is out stock");
+    med[0].setStockState(false);
+    lcd.clear();
+    lcd.setCursor(0, 0);
+    lcd.print("Your medicine");
+    lcd.setCursor(0, 1);
+    lcd.print("is out stock");
+    delay(3000);
     //print to lcd and update to the firebase
   }
+
+
 }
 //------------------------------------------------------------
 
@@ -289,4 +305,3 @@ void AlarmTone() { //this method will activate the buzzer and play a tone
   noTone(buzzer);//Stop the tone
 }
 //------------------------------------------------------------
-}

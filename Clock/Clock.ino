@@ -51,7 +51,7 @@ void loop () {
     lcd.print(':');
     lcd.print(MinStr);
     lcd.print(':');
-    lcd.println(now.second(), DEC);
+    lcd.print(now.second(), DEC);
   }
 
   lcd.clear();// Clear the screen from everything
@@ -60,7 +60,7 @@ void loop () {
   lcd.print(':');
   lcd.print(MinStr);
   lcd.print(':');
-  lcd.println(now.second(), DEC);
+  lcd.print(now.second(), DEC);
 
   delay(1000);
 
