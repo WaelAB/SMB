@@ -95,7 +95,7 @@ void loop() {
   if (med[0].getStockState() == true) {
     for ( int i = 0 ; i < med[0].getDosesNum(); i++) {
 
-      if (HourInt == med[0].getTimes(i) && MinInt == 51 && SecInt <= 10) {
+      if (HourInt == med[0].getTimes(i) && MinInt == 24 && SecInt <= 10) {
         lcd.clear();
         lcd.setCursor(0, 0);
         lcd.print("Your medicine");
@@ -109,7 +109,9 @@ void loop() {
         Serial.print("Temp");
         Serial.println(tempMin);
         while (true) {
+
           AlarmTone();
+          now = rtc.now();
 
           CurrentWeight = scale.get_units(), 10;// read the weight
           CurrentWeight = abs(CurrentWeight);
@@ -120,10 +122,7 @@ void loop() {
           if (oldWeight - CurrentWeight > 0.30 ) { // (&& CurrentWeight > 0.20 ).20 is threshold if we use a medicne packet
             Serial.println(" YOU HAVE TOOK YOUR MEDICINE !");  // .30 treshold for the diffrerance betweem each pill
 
-            // update status on Firebase
-            // Wire.begin(10);
-            //Serial.println(HourInt);
-            //Wire.write(HourInt);
+            //Wire.onRequest(HandshakeSND); // send confirmation to esp
             // logSnd(HourInt);
             break;
           }
@@ -164,7 +163,6 @@ void loop() {
 void receiveEvent() {
 
   while (0 < Wire.available()) {
-    Serial.println("recive");
 
     uID = Wire.read(); // Receive and store the user ID from the esp
 
