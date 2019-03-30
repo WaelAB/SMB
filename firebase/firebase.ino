@@ -5,8 +5,8 @@
 // Set these to run example.
 #define FIREBASE_HOST "smb-499-8a7d2.firebaseio.com" // DataBase Host Name
 #define FIREBASE_AUTH "XGKBIJ5TbwDq6aCXF85J2pe77VhcpVXVTohI0uzZ" //token to acceses the DB
-#define WIFI_SSID "Moodyzz" // name of the router 
-#define WIFI_PASSWORD "14161416" // password of the router
+#define WIFI_SSID "Connect_4G_Router" // name of the router 
+#define WIFI_PASSWORD "Aa2468Aa" // password of the router
 
 int len; // store string lenght's to send it to arduino
 int takenTime = 0; // intiate the time
@@ -75,14 +75,14 @@ void SettingUp() {
   Wire.beginTransmission(8); // start the transmission on port 8
   int userID = Firebase.getInt("/User/ID");// get the user ID form the firebase and store into User ID
   if (Firebase.failed()) { // check for error
-    Serial.print("Getting /Data failed:");
+    Serial.print("setting /number failed:");
     Serial.println(Firebase.error());
   }
   Wire.write(userID);// Send the user ID to the Arduino
 
   String uName = Firebase.getString("/User/Name"); // getting the username from the firebase
   if (Firebase.failed()) { // check for error
-    Serial.print("Getting /Data failed:");
+    Serial.print("setting /number failed:");
     Serial.println(Firebase.error());
   }
   len = uName.length(); //store lenght of the username
@@ -94,25 +94,25 @@ void SettingUp() {
 
   int containerNum = Firebase.getInt("/Medicine/container");// get the container number from the firebase
   if (Firebase.failed()) { // check for error
-    Serial.print("Getting /Data failed:");
+    Serial.print("setting /number failed:");
     Serial.println(Firebase.error());
   }
   Wire.write(containerNum);// send the container number to the arduino
 
-  String MedName = Firebase.getString("/Medicine/Name");// get the medicine name from the firebase
-  if (Firebase.failed()) { // check for error
-    Serial.print("Getting /Data failed:");
-    Serial.println(Firebase.error());
-  }
-  len = MedName.length();// store the medicine name lenngth 
-  Wire.write(len);// send the medicine name length to the arduino
-  for (int i = 0; i < len; i++) {
-    Wire.write(MedName.charAt(i));// sending character by character
-  }
+//  String MedName = Firebase.getString("/Medicine/Name");// get the medicine name from the firebase
+//  if (Firebase.failed()) { // check for error
+//    Serial.print("setting /number failed:");
+//    Serial.println(Firebase.error());
+//  }
+//  len = MedName.length();// store the medicine name lenngth 
+//  Wire.write(len);// send the medicine name length to the arduino
+//  for (int i = 0; i < len; i++) {
+//    Wire.write(MedName.charAt(i));// sending character by character
+//  }
 
   String Dosage = Firebase.getString("/Medicine/Dosage");// get the dosage amount from the firebase
   if (Firebase.failed()) { // check for error
-    Serial.print("Getting /Data failed:");
+    Serial.print("setting /number failed:");
     Serial.println(Firebase.error());
   }
   len = Dosage.length();// store the dosage length 
@@ -123,7 +123,7 @@ void SettingUp() {
   
   int DosageNum = Firebase.getInt("/Medicine/DosesNum");// get the dosage number from the firebase
   if (Firebase.failed()) { // check for error
-    Serial.print("Getting /Data failed:");
+    Serial.print("setting /number failed:");
     Serial.println(Firebase.error());
   }
   Serial.println(DosageNum);
@@ -133,13 +133,31 @@ void SettingUp() {
 
   for (int i = 0; i < DosageNum; i++) { // to loop over the number of dosage
     String Dosepath = d + i; // modify the loop in each iterate to get all the gosages 
-    int fDose = Firebase.getInt(Dosepath);
+    String fDose = Firebase.getString(Dosepath);
+    String temp;
+    int fDoseInt=0;
     if (Firebase.failed()) { // check for error
-      Serial.print("Getting /Data failed:");
+      Serial.print("setting /number failed:");
       Serial.println(Firebase.error());
     }
-    Wire.write(fDose);
-    Serial.print(fDose);
+    for (int j=0;j<fDose.length();j++){
+      if (fDose[j] != ':'){
+        temp += fDose.charAt(j);
+      }else{
+        fDoseInt = temp.toInt();
+        
+        Wire.write(fDoseInt);
+        temp="";
+      }
+    }
+    fDoseInt = temp.toInt();
+    
+        Wire.write(fDoseInt);
+        temp="";
+    
+ 
+Serial.print(fDose);
+fDose="";
 
   }
   boolean inStock = Firebase.getBool("/Medicine/InStock");
@@ -147,7 +165,10 @@ void SettingUp() {
     Serial.print("Getting /Data failed:");
     Serial.println(Firebase.error());
   }
+  
   Wire.write(inStock);
+  
+ 
 
 
 
