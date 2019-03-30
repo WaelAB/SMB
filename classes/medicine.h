@@ -5,8 +5,8 @@ class medicine {
     int DosesNum; // number of doses per day
     int ContainerNum; // number of the container
     boolean InStock;// to check if the medicine still available or not
-    int Times[];// to store the times for single medicine
-    int Minutes[]; // to store the Minutes for single medicine
+    int Times[3];// to store the times for single medicine
+    int Minutes[3]; // to store the Minutes for single medicine
 
 
   public:

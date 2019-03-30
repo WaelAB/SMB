@@ -105,7 +105,7 @@ void loop() {
     for ( int i = 0 ; i < med[0].getDosesNum(); i++) {
 
 
-      if (HourInt == med[0].getTimes(i) && MinInt == 0 && SecInt <= 7) {
+      if (HourInt == med[0].getTimes(i) && MinInt == med[0].getMinutes(i) && SecInt <= 7) {
         lcd.clear();
         lcd.setCursor(0, 0);
         lcd.print("Your medicine");
