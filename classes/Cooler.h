@@ -12,7 +12,8 @@ public:
   public:
     void CheckTemp () {
       temp = analogRead(tempPin); //takes the read from the analog pin
-      temp = temp * 0.48828125; // converting the analog read to Celsius
+     // temp = temp * 0.48828125; // converting the analog read to Celsius
+     temp = temp * 0.32226562;
       //Serial.println(temp);
       if (temp > 24) { // if the temperature is more than 24
         digitalWrite(relayPin, LOW); // turn the cooler on

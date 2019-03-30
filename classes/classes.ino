@@ -29,6 +29,7 @@ int ConNum = 0 ; // Container Number
 char c ; // Temporary varible to store chars
 int strLen = 0; // Temporary varible to store string length
 int DTime = 0; // Temporary to store dosage time and move it into time array
+int DMin = 0; // Temporary to store dosage time and move it into time array
 //--------------
 String HourStr;
 int HourInt = 0;
@@ -67,7 +68,6 @@ void setup() {
   SettingUp();
 }
 
-
 void loop() {
 
   DateTime now = rtc.now(); // Creating object of DateTime
@@ -91,11 +91,21 @@ void loop() {
   delay(1000);
   lcd.clear();
 
-  //Serial.println(user[uID].getUname());
+  Serial.println("Hours");
+  Serial.println(med[0].getTimes(0) );
+  Serial.println(med[0].getTimes(1) );
+  Serial.println(med[0].getTimes(2) );
+
+  Serial.println("Mins");
+  Serial.println(med[0].getMinutes(0) );
+  Serial.println(med[0].getMinutes(1) );
+  Serial.println(med[0].getMinutes(2) );
+
   if (med[0].getStockState() == true) {
     for ( int i = 0 ; i < med[0].getDosesNum(); i++) {
 
-      if (HourInt == med[0].getTimes(i) && MinInt == 24 && SecInt <= 10) {
+
+      if (HourInt == med[0].getTimes(i) && MinInt == 0 && SecInt <= 7) {
         lcd.clear();
         lcd.setCursor(0, 0);
         lcd.print("Your medicine");
@@ -109,7 +119,6 @@ void loop() {
         Serial.print("Temp");
         Serial.println(tempMin);
         while (true) {
-
           AlarmTone();
           now = rtc.now();
 
@@ -122,7 +131,10 @@ void loop() {
           if (oldWeight - CurrentWeight > 0.30 ) { // (&& CurrentWeight > 0.20 ).20 is threshold if we use a medicne packet
             Serial.println(" YOU HAVE TOOK YOUR MEDICINE !");  // .30 treshold for the diffrerance betweem each pill
 
-            //Wire.onRequest(HandshakeSND); // send confirmation to esp
+            // update status on Firebase
+            // Wire.begin(10);
+            //Serial.println(HourInt);
+            //Wire.write(HourInt);
             // logSnd(HourInt);
             break;
           }
@@ -163,6 +175,7 @@ void loop() {
 void receiveEvent() {
 
   while (0 < Wire.available()) {
+    Serial.println("recive");
 
     uID = Wire.read(); // Receive and store the user ID from the esp
 
@@ -186,15 +199,15 @@ void receiveEvent() {
       Serial.println(med[ConNum].getContainerNum());
       //*******************
 
-      strLen = Wire.read();
-      for (int i = 0; i < strLen ; i++) {
-        c = Wire.read(); // Receive and store the Medicine name value char by char
-        MedName += c;   // And store it into the Dosage varriable
-      }
-
-      med[ConNum].setMedName(MedName);
-      Serial.println("MedName: " + med[ConNum].getMedName());
-      MedName = "";
+      //      strLen = Wire.read();
+      //      for (int i = 0; i < strLen ; i++) {
+      //        c = Wire.read(); // Receive and store the Medicine name value char by char
+      //        MedName += c;   // And store it into the Dosage varriable
+      //      }
+      //
+      //      med[ConNum].setMedName(MedName);
+      //      Serial.println("MedName: " + med[ConNum].getMedName());
+      //      MedName = "";
       //*******************
 
       strLen = Wire.read();
@@ -210,11 +223,17 @@ void receiveEvent() {
       DosageNum = Wire.read(); // Receive and store the number of doses value from the esp
       Serial.println(DosageNum);
       med[ConNum].setDosesNum(DosageNum);
+
       for (int i = 0 ; i < DosageNum ; i++) {
         DTime = Wire.read(); // Receive and store the Dosage time value from the esp
+        Serial.println(DTime);
         med[ConNum].setTimes(DTime, i);
-        Serial.print("Time: ");
-        Serial.println(med[ConNum].getTimes(i));
+        DMin = Wire.read(); // Receive and store the Dosage time value from the esp
+        Serial.println(DMin);
+        med[ConNum].setMinutes(DMin, i);
+
+        //        Serial.print("Time: ");
+        //        Serial.println(med[ConNum].getTimes(i));
       }
       //*******************
 
@@ -273,7 +292,7 @@ void SettingUp() {
   scale.set_scale(calibration_factor); //Adjust to this calibration factor
   units = scale.get_units(), 10;
 
-  while (units < 0.10) {// Wait untill the user to put his medicine
+  while (units < 0.20) {// Wait untill the user to put his medicine
     units = scale.get_units(), 10;
     delay(1000);
     if (units < 0)
