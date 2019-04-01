@@ -131,11 +131,7 @@ void loop() {
           if (oldWeight - CurrentWeight > 0.30 ) { // (&& CurrentWeight > 0.20 ).20 is threshold if we use a medicne packet
             Serial.println(" YOU HAVE TOOK YOUR MEDICINE !");  // .30 treshold for the diffrerance betweem each pill
 
-            // update status on Firebase
-            // Wire.begin(10);
-            //Serial.println(HourInt);
-            //Wire.write(HourInt);
-            // logSnd(HourInt);
+            Wire.onRequest(logSnd);
             break;
           }
 
@@ -324,3 +320,7 @@ void AlarmTone() { //this method will activate the buzzer and play a tone
   noTone(buzzer);//Stop the tone
 }
 //------------------------------------------------------------
+void logSnd() {
+  Wire.write(20);
+  Wire.write(true);
+}
