@@ -6,21 +6,25 @@
 #include "Cooler.h"// Cooler class
 #include "RTClib.h" // include the clock libarary
 //--------------
-HX711 scale(3, 2);// digital pins = DT ,SCK
+HX711 scale1(3, 2);// digital pins = DT ,SCK
+HX711 scale2(6, 7);// digital pins = DT ,SCK
 //--------------
 RTC_DS1307 rtc;//create object from RTC module
 LiquidCrystal_I2C lcd(0x27, 16, 2);//create object of the LCD
 //--------------
 int buzzer = 4; // digital pin of the buzzer
 float calibration_factor = 2000; // this calibration factor is adjusted according to my load cell
-float units; // where the weight is stored
+float calibration_factor2 = 2500;
+float units1; // where the weight is stored
+float units2; // where the weight is stored
 //--------------
 medicine med[2];// create array of medicine type
 User user[2]; // create array of medicine type
 Cooler cool; // create object of cooler type
 //--------------
 String uName ; // User Name
-int uID; // User ID
+int uID = 0; // User ID
+int ID = 0;
 String MedName; // Medicine Name
 String Dosage; // Dosage amount
 int DosageNum = 0 ; // The number of doses
@@ -30,6 +34,8 @@ char c ; // Temporary varible to store chars
 int strLen = 0; // Temporary varible to store string length
 int DTime = 0; // Temporary to store dosage time and move it into time array
 int DMin = 0; // Temporary to store dosage time and move it into time array
+int medSize = 0 ;
+int ddd = 0;
 //--------------
 String HourStr;
 int HourInt = 0;
@@ -43,6 +49,8 @@ float firstWeight = 0.0;
 float CurrentWeight = 0.0;
 float oldWeight = 0.0;
 float outOfStock = 0.0;
+float ssss = 0.0;
+
 //--------------
 int GotIt = -1 ;// Message to esp initated with -1
 //--------------
@@ -55,6 +63,7 @@ void setup() {
   lcd.backlight(); // Trun the light of the screen
   //--------------
   Wire.onReceive(receiveEvent); // register receive event from esp
+  // Wire.onRequest();
   //--------------
   pinMode(cool.relayPin, OUTPUT);// Realy pin
   pinMode (buzzer, OUTPUT) ; // the buzzer pin should output the buzzer sound
@@ -64,7 +73,6 @@ void setup() {
     Serial.println("Couldn't find RTC");
     while (1);
   }
-
   SettingUp();
 }
 
@@ -91,121 +99,186 @@ void loop() {
   delay(1000);
   lcd.clear();
 
-  Serial.println("Hours");
-  Serial.println(med[0].getTimes(0) );
-  Serial.println(med[0].getTimes(1) );
-  Serial.println(med[0].getTimes(2) );
 
-  Serial.println("Mins");
-  Serial.println(med[0].getMinutes(0) );
-  Serial.println(med[0].getMinutes(1) );
-  Serial.println(med[0].getMinutes(2) );
+  for ( int x = 0 ; x < medSize ; x++) {
+    Serial.println("Hours");
+    Serial.println(med[x].getTimes(0) );
+    Serial.println(med[x].getTimes(1) );
+    Serial.println(med[x].getTimes(2) );
 
-  if (med[0].getStockState() == true) {
-    for ( int i = 0 ; i < med[0].getDosesNum(); i++) {
+    Serial.println("Mins");
+    Serial.println(med[x].getMinutes(0) );
+    Serial.println(med[x].getMinutes(1) );
+    Serial.println(med[x].getMinutes(2) );
+
+    if (med[x].getStockState() == true) {
+      for ( int i = 0 ; i < med[x].getDosesNum(); i++) {
+
+        if (HourInt == med[x].getTimes(i) && MinInt ==  med[x].getMinutes(i) && SecInt <= 10) {
+
+          if ( med[x].getContainerNum() == 0) {
+            oldWeight = scale1.get_units(), 10;// weight before the alarm
+            CurrentWeight = scale1.get_units(), 10;// weight after the user pick his medicine
+
+            tempMin = MinInt;
+            Serial.print("Temp");
+            Serial.println(tempMin);
+            while (true) {
+              AlarmTone();
+              now = rtc.now();
+              lcd.clear();
+              lcd.setCursor(0, 0);// First digit , First line
+              lcd.print("Please take ");
+              lcd.setCursor(1, 0);// First digit , First line
+              lcd.print(med[x].getDosage());
+
+              CurrentWeight = scale1.get_units(), 10;// read the weight
+              CurrentWeight = abs(CurrentWeight);
+              Serial.print ("Current");
+              Serial.println(CurrentWeight);
+
+              delay (1000);
+              if (oldWeight - CurrentWeight > 0.30 ) { // (&& CurrentWeight > 0.20 ).20 is threshold if we use a medicne packet
+                Serial.println(" YOU HAVE TOOK YOUR MEDICINE !");  // .30 treshold for the diffrerance betweem each pill
 
 
-      if (HourInt == med[0].getTimes(i) && MinInt == med[0].getMinutes(i) && SecInt <= 7) {
-        lcd.clear();
-        lcd.setCursor(0, 0);
-        lcd.print("Your medicine");
-        lcd.setCursor(0, 1);
-        lcd.print("time has come");
+                //Wire.write(20);
+                //Wire.write(true);
+                //logSnd(HourInt);
+                break;
+              }
 
-        oldWeight = scale.get_units(), 10;// weight before the alarm
-        CurrentWeight = scale.get_units(), 10;// weight after the user pick his medicine
+              MinStr =  String(now.minute(), DEC); // Getting Minutes is save into String
+              MinInt = MinStr.toInt();
+              Serial.println (MinInt);
+              if (MinInt  - tempMin > 0) {
+                Serial.println (" Time passed and med has not taken");
+                // update on FB
+                break;
+              }
+            }
 
-        tempMin = MinInt;
-        Serial.print("Temp");
-        Serial.println(tempMin);
-        while (true) {
-          AlarmTone();
-          now = rtc.now();
+            //*********************
+          } else if ( med[x].getContainerNum() == 1) {
+            oldWeight = scale2.get_units(), 10;// weight before the alarm
+            CurrentWeight = scale2.get_units(), 10;// weight after the user pick his medicine
 
-          CurrentWeight = scale.get_units(), 10;// read the weight
-          CurrentWeight = abs(CurrentWeight);
-          Serial.print ("Current");
-          Serial.println(CurrentWeight);
-          delay (1000);
+            tempMin = MinInt;
+            Serial.print("Temp");
+            Serial.println(tempMin);
+            while (true) {
+              AlarmTone();
+              now = rtc.now();
+              lcd.clear();
+              lcd.setCursor(0, 0);// First digit , First line
+              lcd.print("Please take ");
+              lcd.setCursor(1, 0);// First digit , First line
+              lcd.print(med[x].getDosage());
+              
+              CurrentWeight = scale2.get_units(), 10;// read the weight
+              CurrentWeight = abs(CurrentWeight);
+              Serial.print ("Current");
+              Serial.println(CurrentWeight);
+              delay (1000);
 
-          if (oldWeight - CurrentWeight > 0.30 ) { // (&& CurrentWeight > 0.20 ).20 is threshold if we use a medicne packet
-            Serial.println(" YOU HAVE TOOK YOUR MEDICINE !");  // .30 treshold for the diffrerance betweem each pill
+              if (oldWeight - CurrentWeight > 0.80) { // (&& CurrentWeight > 0.20 ).20 is threshold if we use a medicne packet
+                Serial.println(" YOU HAVE TOOK YOUR MEDICINE !");  // .30 treshold for the diffrerance betweem each pill
 
-            Wire.onRequest(logSnd);
-            break;
-          }
+                // update status on Firebase
+                // Wire.begin(10);
+                //Serial.println(HourInt);
+                // Wire.write(20);
+                // Wire.write(true);
+                // logSnd(HourInt);
+                break;
+              }
 
-          MinStr =  String(now.minute(), DEC); // Getting Minutes is save into String
-          MinInt = MinStr.toInt();
-          Serial.println (MinInt);
-          if (MinInt  - tempMin > 0) {
-            Serial.println (" Time passed and med has not taken");
-            // update on FB
-            break;
+              MinStr =  String(now.minute(), DEC); // Getting Minutes is save into String
+              MinInt = MinStr.toInt();
+              Serial.println (MinInt);
+              if (MinInt  - tempMin > 0) {
+                Serial.println (" Time passed and med has not taken");
+                // update on FB
+                break;
+              }
+            }
           }
         }
       }
     }
-  }
-  lcd.clear();
-
-  // now we will check if the medicine is out of stock
-  outOfStock = scale.get_units(), 10;
-  if (outOfStock < 0.20) {
-    med[0].setStockState(false);
 
     lcd.clear();
-    lcd.setCursor(0, 0);
-    lcd.print("Your medicine");
-    lcd.setCursor(0, 1);
-    lcd.print("is out stock");
-    delay(1500);
-    lcd.clear();
-    //print to lcd and update to the firebase
-  } else {
-    med[0].setStockState(true);
+
+    // now we will check if the medicine is out of stock
+    for ( int x = 0 ; x < medSize ; x++) {
+
+      if (med[x].getContainerNum() == 0) {
+        outOfStock = scale1.get_units(), 10;
+        if (outOfStock < 0.20) {
+          med[x].setStockState(false);
+
+          lcd.clear();
+          lcd.setCursor(0, 0);
+          lcd.print("Your medicine ");
+          lcd.print(x);
+          lcd.setCursor(0, 1);
+          lcd.print("is out stock");
+          delay(1500);
+          lcd.clear();
+          //print to lcd and update to the firebase
+
+        }
+      } else if (med[x].getContainerNum() == 1) {
+        outOfStock = scale2.get_units(), 10;
+        if (outOfStock < 0.80) {
+          med[x].setStockState(false);
+
+          lcd.clear();
+          lcd.setCursor(0, 0);
+          lcd.print("Your medicine ");
+          lcd.print(x);
+          lcd.setCursor(0, 1);
+          lcd.print("is out stock");
+          delay(1500);
+          lcd.clear();
+          //print to lcd and update to the firebase
+        } else {
+          med[x].setStockState(true);
+        }
+      }
+    }
   }
 }
+
 //------------------------------------------------------------
 
 void receiveEvent() {
 
   while (0 < Wire.available()) {
-    Serial.println("recive");
 
-    uID = Wire.read(); // Receive and store the user ID from the esp
+    medSize = Wire.read();
+    //*******************
 
-    strLen = Wire.read();
-    for (int i = 0; i < strLen ; i++) {
-      c = Wire.read();
-      uName += c;
-    }
-    if (uName != NULL) {// avoid setting null values
-      user[uID].setID(uID);
+    ID = Wire.read(); // Receive and store the user ID from the esp
+    if (ID >= 1) {
+      uID = ID - 1;
+      user[uID].setID(ID);
       Serial.print("User ID: ");
       Serial.println(user[uID].getID());
+      //*******************
 
+      strLen = Wire.read();
+      for (int i = 0; i < strLen ; i++) {
+        c = Wire.read();
+        uName += c;
+      }
       user[uID].setUname(uName);
       Serial.println(user[uID].getUname());
       uName = "";
-      //*******************
-
       ConNum = Wire.read();
-      med[ConNum].setContainerNum(ConNum);
-      Serial.println(med[ConNum].getContainerNum());
       //*******************
 
-      //      strLen = Wire.read();
-      //      for (int i = 0; i < strLen ; i++) {
-      //        c = Wire.read(); // Receive and store the Medicine name value char by char
-      //        MedName += c;   // And store it into the Dosage varriable
-      //      }
-      //
-      //      med[ConNum].setMedName(MedName);
-      //      Serial.println("MedName: " + med[ConNum].getMedName());
-      //      MedName = "";
-      //*******************
-
+      med[ddd].setContainerNum(ConNum);
       strLen = Wire.read();
       for (int i = 0; i < strLen ; i++) {
         c = Wire.read(); // Receive and store the Dosage amount value char by char
@@ -224,12 +297,10 @@ void receiveEvent() {
         DTime = Wire.read(); // Receive and store the Dosage time value from the esp
         Serial.println(DTime);
         med[ConNum].setTimes(DTime, i);
+
         DMin = Wire.read(); // Receive and store the Dosage time value from the esp
         Serial.println(DMin);
         med[ConNum].setMinutes(DMin, i);
-
-        //        Serial.print("Time: ");
-        //        Serial.println(med[ConNum].getTimes(i));
       }
       //*******************
 
@@ -238,12 +309,11 @@ void receiveEvent() {
       Serial.print("In Stock ? ");
       Serial.println(med[ConNum].getStockState());
 
-
-
       Serial.println();            //  to newline
       GotIt = 1; //Set the flag to 1 to confirm that the data is delivered
       Serial.print("Got it");
       Serial.println(GotIt);
+      ddd++;
       user[uID].setMed(med[ConNum]);
     }
   }
@@ -262,9 +332,16 @@ void SettingUp() {
   }
 
   lcd.clear();// Clear the screen from everything
-  scale.set_scale(); //
-  scale.tare();  //Reset the scale to 0
-  long zero_factor = scale.read_average(); // to remove the need of tare scale
+  // First container
+  scale1.set_scale();
+  scale1.tare();  //Reset the scale to 0
+  scale2.set_scale();
+  scale2.tare();  //Reset the scale to
+
+  long zero_factor1 = scale1.read_average(); //remove the need of tare
+  long zero_factor2 = scale2.read_average(); //remove the need of tare
+
+
 
   lcd.setCursor(0, 0);// First digit , First line
   lcd.print("SmartMedicalBox");
@@ -279,34 +356,152 @@ void SettingUp() {
   lcd.print(user[uID].getUname());
   delay(2000);
 
-  lcd.clear();// Clear the screen from everything
-  lcd.setCursor(0, 0);
-  lcd.print("Please add");
-  lcd.setCursor(0, 1);
-  lcd.print(" a medicine");
+  for (int i = 0 ; i < medSize; i++) {
+    lcd.clear();// Clear the screen from everything
+    lcd.setCursor(0, 0);
+    lcd.print("Please add");
+    lcd.setCursor(0, 1);
+    lcd.print(" a medicine ");
+    lcd.print( i );
 
-  scale.set_scale(calibration_factor); //Adjust to this calibration factor
-  units = scale.get_units(), 10;
+    if (med[i].getContainerNum() == 0) {// For the first container
+      scale1.set_scale(calibration_factor); //Adjust to this calibration factor
+      units1 = scale1.get_units(), 10;
 
-  while (units < 0.20) {// Wait untill the user to put his medicine
-    units = scale.get_units(), 10;
-    delay(1000);
-    if (units < 0)
-    {
-      units = 0.00;// to avoid getting minus weight values
+      while (units1 < 0.20) {// Wait untill the user to put his medicine
+        units1 = scale1.get_units(), 10;
+        Serial.println("Hello0");
+        Serial.print(units1);
+        delay(1000);
+        if (units1 < 0)
+        {
+          units1 = 0.00;// to avoid getting minus weight values
+        }
+      }
+    } else if (med[i].getContainerNum() == 1) {//for the second container
+      scale2.set_scale(calibration_factor2); //Adjust to this calibration factor
+      units2 = scale2.get_units(), 10;
+      Serial.println("Hello1");
+      while (units2 < 1.00) {// Wait untill the user to put his medicine
+        units2 = scale2.get_units(), 10;
+
+        Serial.print(units2);
+        delay(1000);
+        if (units2 < 0)
+        {
+          units2 = 0.00;// to avoid getting minus weight values
+        }
+      }
+    }
+    lcd.clear();
+    lcd.setCursor(0, 0);
+    lcd.print("Medicine ");
+    lcd.print( i );
+    lcd.print(" added");
+    lcd.setCursor(0, 1);
+    ddd = 0;
+    if (med[i].getContainerNum() == 0) {
+      firstWeight = units1;
+      lcd.print(firstWeight);
+      Serial.print(firstWeight);
+      Serial.print(" grams");
+      delay(2000);
+      lcd.clear();
+    }
+    else if (med[i].getContainerNum() == 1) {
+      ssss = units2;
+      lcd.print(ssss);
+      Serial.print(ssss);
+      Serial.print(" grams");
+      delay(2000);
+      lcd.clear();
     }
   }
+}
+//------------------------------------------------------------
 
-  lcd.clear();
-  lcd.setCursor(0, 0);
-  lcd.print("Medicine added");
-  lcd.setCursor(0, 1);
-  firstWeight = units;
-  lcd.print(firstWeight);
-  Serial.print(firstWeight);
-  Serial.print(" grams");
-  delay(2000);
-  lcd.clear();
+void MedicineTime (int ContainerNum  , int x , DateTime now) {
+
+  if (ContainerNum == 0) {
+    oldWeight = scale1.get_units(), 10;// weight before the alarm
+    CurrentWeight = scale1.get_units(), 10;// weight after the user pick his medicine
+
+    tempMin = MinInt;
+    Serial.print("Temp");
+    Serial.println(tempMin);
+    while (true) {
+      AlarmTone();
+      now = rtc.now();
+
+      lcd.setCursor(0, 0);// First digit , First line
+      lcd.print("Please take ");
+      lcd.print(med[x].getDosage());
+
+      CurrentWeight = scale1.get_units(), 10;// read the weight
+      CurrentWeight = abs(CurrentWeight);
+      Serial.print ("Current");
+      Serial.println(CurrentWeight);
+
+      delay (1000);
+      if (oldWeight - CurrentWeight > 0.30 ) { // (&& CurrentWeight > 0.20 ).20 is threshold if we use a medicne packet
+        Serial.println(" YOU HAVE TOOK YOUR MEDICINE !");  // .30 treshold for the diffrerance betweem each pill
+
+
+        //Wire.write(20);
+        //Wire.write(true);
+        //logSnd(HourInt);
+        break;
+      }
+
+      MinStr =  String(now.minute(), DEC); // Getting Minutes is save into String
+      MinInt = MinStr.toInt();
+      Serial.println (MinInt);
+      if (MinInt  - tempMin > 0) {
+        Serial.println (" Time passed and med has not taken");
+        // update on FB
+        break;
+      }
+    }
+
+    //*********************
+  } else if (ContainerNum == 1) {
+    oldWeight = scale2.get_units(), 10;// weight before the alarm
+    CurrentWeight = scale2.get_units(), 10;// weight after the user pick his medicine
+
+    tempMin = MinInt;
+    Serial.print("Temp");
+    Serial.println(tempMin);
+    while (true) {
+      AlarmTone();
+      now = rtc.now();
+      CurrentWeight = scale2.get_units(), 10;// read the weight
+      CurrentWeight = abs(CurrentWeight);
+      Serial.print ("Current");
+      Serial.println(CurrentWeight);
+      delay (1000);
+
+      if (oldWeight - CurrentWeight > 1 ) { // (&& CurrentWeight > 0.20 ).20 is threshold if we use a medicne packet
+        Serial.println(" YOU HAVE TOOK YOUR MEDICINE !");  // .30 treshold for the diffrerance betweem each pill
+
+        // update status on Firebase
+        // Wire.begin(10);
+        //Serial.println(HourInt);
+        // Wire.write(20);
+        // Wire.write(true);
+        // logSnd(HourInt);
+        break;
+      }
+
+      MinStr =  String(now.minute(), DEC); // Getting Minutes is save into String
+      MinInt = MinStr.toInt();
+      Serial.println (MinInt);
+      if (MinInt  - tempMin > 0) {
+        Serial.println (" Time passed and med has not taken");
+        // update on FB
+        break;
+      }
+    }
+  }
 }
 //------------------------------------------------------------
 
@@ -320,7 +515,9 @@ void AlarmTone() { //this method will activate the buzzer and play a tone
   noTone(buzzer);//Stop the tone
 }
 //------------------------------------------------------------
-void logSnd() {
+/*
+  void takenSnd() {
   Wire.write(20);
   Wire.write(true);
-}
+  }
+*/

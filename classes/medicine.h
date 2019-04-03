@@ -27,8 +27,8 @@ class medicine {
 
     void setDosesNum(int num) {
       DosesNum = num;
-      // Times[DosesNum];
-      // Minutes[DosesNum];
+     // Times[DosesNum];
+     //Minutes[DosesNum];
     }
     int getDosesNum() {
       return DosesNum;
@@ -61,12 +61,12 @@ class medicine {
     int getMinutes(int j) {
       return Minutes[j];
     }
-//    void setTimesSize(int ss){
-//      Times[ss];
-//    }
-//    void setMinSize(int sm){
-//      Minutes[sm];
-//    }
+    //    void setTimesSize(int ss){
+    //      Times[ss];
+    //    }
+    //    void setMinSize(int sm){
+    //      Minutes[sm];
+    //    }
 
 
 };
