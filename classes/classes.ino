@@ -35,7 +35,6 @@ int strLen = 0; // Temporary varible to store string length
 int DTime = 0; // Temporary to store dosage time and move it into time array
 int DMin = 0; // Temporary to store dosage time and move it into time array
 int medSize = 0 ;
-int ddd = 0;
 //--------------
 String HourStr;
 int HourInt = 0;
@@ -50,7 +49,6 @@ float CurrentWeight = 0.0;
 float oldWeight = 0.0;
 float outOfStock = 0.0;
 float ssss = 0.0;
-
 //--------------
 int GotIt = -1 ;// Message to esp initated with -1
 //--------------
@@ -80,7 +78,6 @@ void loop() {
 
   DateTime now = rtc.now(); // Creating object of DateTime
   cool.CheckTemp();
-
   HourStr = String(now.hour(), DEC); // Getting Hours and save it into String
   HourInt = HourStr.toInt(); // convert string hours into integer
   MinStr =  String(now.minute(), DEC); // Getting Minutes is save into String
@@ -129,23 +126,25 @@ void loop() {
               lcd.clear();
               lcd.setCursor(0, 0);// First digit , First line
               lcd.print("Please take");
-              lcd.setCursor(1, 0);// First digit , Second line
+              lcd.setCursor(0, 1);// First digit , Second line
               lcd.print(med[x].getDosage());
-              lcd.clear();
+
+              delay(1000);
 
               CurrentWeight = scale1.get_units(), 10;// read the weight
               CurrentWeight = abs(CurrentWeight);
-              Serial.print ("Current");
-              Serial.println(CurrentWeight);
+//              Serial.print ("Current");
+//              Serial.println(CurrentWeight);
 
               delay (1000);
               if (oldWeight - CurrentWeight > 0.30 ) { // (&& CurrentWeight > 0.20 ).20 is threshold if we use a medicne packet
                 lcd.clear();
                 lcd.setCursor(0, 0);
                 lcd.print("YOU HAVE TOOK ");  // .30 treshold for the diffrerance betweem each pill
-                lcd.setCursor(1, 0);
+                lcd.setCursor(0, 1);
                 lcd.print("YOUR MEDICINE !");
-                lcd.clear();
+
+                delay(1000);
                 //Wire.write(20);
                 //Wire.write(true);
                 //logSnd(HourInt);
@@ -158,10 +157,11 @@ void loop() {
               if (MinInt  - tempMin > 0) {
                 lcd.clear();
                 lcd.setCursor(0, 0);
-                lcd.print(" Time passed and");
-                lcd.setCursor(1, 0);
-                lcd.print(" med has not taken");
-                lcd.clear();
+                lcd.print("You missed ");
+                lcd.setCursor(0, 1);
+                lcd.print("your medicine");
+
+                delay(1000);
                 // update on FB
                 break;
               }
@@ -181,9 +181,10 @@ void loop() {
               lcd.clear();
               lcd.setCursor(0, 0);// First digit , First line
               lcd.print("Please take ");
-              lcd.setCursor(1, 0);// First digit , First line
+              lcd.setCursor(0, 1);// First digit , First line
               lcd.print(med[x].getDosage());
-              lcd.clear();
+
+              delay(1000);
 
               CurrentWeight = scale2.get_units(), 10;// read the weight
               CurrentWeight = abs(CurrentWeight);
@@ -192,7 +193,7 @@ void loop() {
               delay (1000);
 
               if (oldWeight - CurrentWeight > 0.80) { // (&& CurrentWeight > 0.20 ).20 is threshold if we use a medicne packet
-                Serial.println(" YOU HAVE TOOK YOUR MEDICINE !");  // .30 treshold for the diffrerance betweem each pill
+               // Serial.println(" YOU HAVE TOOK YOUR MEDICINE !");  // .30 treshold for the diffrerance betweem each pill
 
                 // update status on Firebase
                 // Wire.begin(10);
@@ -210,9 +211,9 @@ void loop() {
                 lcd.clear();
                 lcd.setCursor(0, 0);
                 lcd.print("You missed ");
-                lcd.setCursor(1, 0);
+                lcd.setCursor(0, 1);
                 lcd.print("your medicine");
-                lcd.clear();
+                delay(1000);
                 // update on FB
                 break;
               }
@@ -290,10 +291,11 @@ void receiveEvent() {
       user[uID].setUname(uName);
       Serial.println(user[uID].getUname());
       uName = "";
-      ConNum = Wire.read();
-      //*******************
 
-      med[ddd].setContainerNum(ConNum);
+      //*******************
+      ConNum = Wire.read();
+      med[ConNum].setContainerNum(ConNum);
+
       strLen = Wire.read();
       for (int i = 0; i < strLen ; i++) {
         c = Wire.read(); // Receive and store the Dosage amount value char by char
@@ -328,7 +330,6 @@ void receiveEvent() {
       GotIt = 1; //Set the flag to 1 to confirm that the data is delivered
       Serial.print("Got it");
       Serial.println(GotIt);
-      ddd++;
       user[uID].setMed(med[ConNum]);
     }
   }
@@ -412,7 +413,7 @@ void SettingUp() {
     lcd.print( i + 1 );
     lcd.print(" added");
     lcd.setCursor(0, 1);
-    ddd = 0;
+
     if (med[i].getContainerNum() == 0) {
       firstWeight = units1;
       lcd.print(firstWeight);
