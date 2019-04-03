@@ -17,8 +17,8 @@ void setup () {
   }
   // These two line of code is supposed to run for the first time only to set the time and can be commented
   // until you want to set it up again
-  //  DateTime now = rtc.now(); // Creating object of Date Time
-  //rtc.adjust(now.unixtime()+40); // Adjusting time according to OS time and -10 because time was ahead by 10 seconds
+  // DateTime now = rtc.now(); // Creating object of Date Time
+  // rtc.adjust(now.unixtime()+165); // Adjusting time according to OS time and -10 because time was ahead by 10 seconds
 }
 int buzzer = 4 ;
 String HourStr;

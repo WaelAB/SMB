@@ -89,7 +89,7 @@ void loop() {
   SecInt = SecStr.toInt();// convert string Seconds into integer
 
   //Printing time on lcd
-  lcd.clear();
+  //lcd.clear();
   lcd.setCursor(0, 0);
   lcd.print(now.hour(), DEC);
   lcd.print(':');
@@ -97,23 +97,23 @@ void loop() {
   lcd.print(':');
   lcd.print(now.second(), DEC);
   delay(1000);
-  lcd.clear();
+  //lcd.clear();
 
 
   for ( int x = 0 ; x < medSize ; x++) {
-    Serial.println("Hours");
-    Serial.println(med[x].getTimes(0) );
-    Serial.println(med[x].getTimes(1) );
-    Serial.println(med[x].getTimes(2) );
+    //    Serial.println("Hours");
+    //    Serial.println(med[x].getTimes(0) );
+    //    Serial.println(med[x].getTimes(1) );
+    //    Serial.println(med[x].getTimes(2) );
+    //
+    //    Serial.println("Mins");
+    //    Serial.println(med[x].getMinutes(0) );
+    //    Serial.println(med[x].getMinutes(1) );
+    //    Serial.println(med[x].getMinutes(2) );
 
-    Serial.println("Mins");
-    Serial.println(med[x].getMinutes(0) );
-    Serial.println(med[x].getMinutes(1) );
-    Serial.println(med[x].getMinutes(2) );
 
-    if (med[x].getStockState() == true) {
-      for ( int i = 0 ; i < med[x].getDosesNum(); i++) {
-
+    for ( int i = 0 ; i < med[x].getDosesNum(); i++) {
+      if (med[x].getStockState() == true) {
         if (HourInt == med[x].getTimes(i) && MinInt ==  med[x].getMinutes(i) && SecInt <= 10) {
 
           if ( med[x].getContainerNum() == 0) {
@@ -121,16 +121,17 @@ void loop() {
             CurrentWeight = scale1.get_units(), 10;// weight after the user pick his medicine
 
             tempMin = MinInt;
-            Serial.print("Temp");
-            Serial.println(tempMin);
+            //            Serial.print("Temp");
+            //            Serial.println(tempMin);
             while (true) {
               AlarmTone();
               now = rtc.now();
               lcd.clear();
               lcd.setCursor(0, 0);// First digit , First line
-              lcd.print("Please take ");
-              lcd.setCursor(1, 0);// First digit , First line
+              lcd.print("Please take");
+              lcd.setCursor(1, 0);// First digit , Second line
               lcd.print(med[x].getDosage());
+              lcd.clear();
 
               CurrentWeight = scale1.get_units(), 10;// read the weight
               CurrentWeight = abs(CurrentWeight);
@@ -139,9 +140,12 @@ void loop() {
 
               delay (1000);
               if (oldWeight - CurrentWeight > 0.30 ) { // (&& CurrentWeight > 0.20 ).20 is threshold if we use a medicne packet
-                Serial.println(" YOU HAVE TOOK YOUR MEDICINE !");  // .30 treshold for the diffrerance betweem each pill
-
-
+                lcd.clear();
+                lcd.setCursor(0, 0);
+                lcd.print("YOU HAVE TOOK ");  // .30 treshold for the diffrerance betweem each pill
+                lcd.setCursor(1, 0);
+                lcd.print("YOUR MEDICINE !");
+                lcd.clear();
                 //Wire.write(20);
                 //Wire.write(true);
                 //logSnd(HourInt);
@@ -152,7 +156,12 @@ void loop() {
               MinInt = MinStr.toInt();
               Serial.println (MinInt);
               if (MinInt  - tempMin > 0) {
-                Serial.println (" Time passed and med has not taken");
+                lcd.clear();
+                lcd.setCursor(0, 0);
+                lcd.print(" Time passed and");
+                lcd.setCursor(1, 0);
+                lcd.print(" med has not taken");
+                lcd.clear();
                 // update on FB
                 break;
               }
@@ -164,8 +173,8 @@ void loop() {
             CurrentWeight = scale2.get_units(), 10;// weight after the user pick his medicine
 
             tempMin = MinInt;
-            Serial.print("Temp");
-            Serial.println(tempMin);
+            //            Serial.print("Temp");
+            //            Serial.println(tempMin);
             while (true) {
               AlarmTone();
               now = rtc.now();
@@ -174,11 +183,12 @@ void loop() {
               lcd.print("Please take ");
               lcd.setCursor(1, 0);// First digit , First line
               lcd.print(med[x].getDosage());
-              
+              lcd.clear();
+
               CurrentWeight = scale2.get_units(), 10;// read the weight
               CurrentWeight = abs(CurrentWeight);
-              Serial.print ("Current");
-              Serial.println(CurrentWeight);
+              //Serial.print ("Current");
+              //Serial.println(CurrentWeight);
               delay (1000);
 
               if (oldWeight - CurrentWeight > 0.80) { // (&& CurrentWeight > 0.20 ).20 is threshold if we use a medicne packet
@@ -197,7 +207,12 @@ void loop() {
               MinInt = MinStr.toInt();
               Serial.println (MinInt);
               if (MinInt  - tempMin > 0) {
-                Serial.println (" Time passed and med has not taken");
+                lcd.clear();
+                lcd.setCursor(0, 0);
+                lcd.print("You missed ");
+                lcd.setCursor(1, 0);
+                lcd.print("your medicine");
+                lcd.clear();
                 // update on FB
                 break;
               }
@@ -220,7 +235,7 @@ void loop() {
           lcd.clear();
           lcd.setCursor(0, 0);
           lcd.print("Your medicine ");
-          lcd.print(x);
+          lcd.print(x + 1);
           lcd.setCursor(0, 1);
           lcd.print("is out stock");
           delay(1500);
@@ -236,7 +251,7 @@ void loop() {
           lcd.clear();
           lcd.setCursor(0, 0);
           lcd.print("Your medicine ");
-          lcd.print(x);
+          lcd.print(x + 1);
           lcd.setCursor(0, 1);
           lcd.print("is out stock");
           delay(1500);
@@ -362,7 +377,7 @@ void SettingUp() {
     lcd.print("Please add");
     lcd.setCursor(0, 1);
     lcd.print(" a medicine ");
-    lcd.print( i );
+    lcd.print( i + 1 );
 
     if (med[i].getContainerNum() == 0) {// For the first container
       scale1.set_scale(calibration_factor); //Adjust to this calibration factor
@@ -370,8 +385,7 @@ void SettingUp() {
 
       while (units1 < 0.20) {// Wait untill the user to put his medicine
         units1 = scale1.get_units(), 10;
-        Serial.println("Hello0");
-        Serial.print(units1);
+
         delay(1000);
         if (units1 < 0)
         {
@@ -381,11 +395,10 @@ void SettingUp() {
     } else if (med[i].getContainerNum() == 1) {//for the second container
       scale2.set_scale(calibration_factor2); //Adjust to this calibration factor
       units2 = scale2.get_units(), 10;
-      Serial.println("Hello1");
+
       while (units2 < 1.00) {// Wait untill the user to put his medicine
         units2 = scale2.get_units(), 10;
 
-        Serial.print(units2);
         delay(1000);
         if (units2 < 0)
         {
@@ -396,7 +409,7 @@ void SettingUp() {
     lcd.clear();
     lcd.setCursor(0, 0);
     lcd.print("Medicine ");
-    lcd.print( i );
+    lcd.print( i + 1 );
     lcd.print(" added");
     lcd.setCursor(0, 1);
     ddd = 0;
@@ -409,97 +422,12 @@ void SettingUp() {
       lcd.clear();
     }
     else if (med[i].getContainerNum() == 1) {
-      ssss = units2;
-      lcd.print(ssss);
-      Serial.print(ssss);
+      firstWeight = units2;
+      lcd.print(firstWeight);
+      Serial.print(firstWeight);
       Serial.print(" grams");
       delay(2000);
       lcd.clear();
-    }
-  }
-}
-//------------------------------------------------------------
-
-void MedicineTime (int ContainerNum  , int x , DateTime now) {
-
-  if (ContainerNum == 0) {
-    oldWeight = scale1.get_units(), 10;// weight before the alarm
-    CurrentWeight = scale1.get_units(), 10;// weight after the user pick his medicine
-
-    tempMin = MinInt;
-    Serial.print("Temp");
-    Serial.println(tempMin);
-    while (true) {
-      AlarmTone();
-      now = rtc.now();
-
-      lcd.setCursor(0, 0);// First digit , First line
-      lcd.print("Please take ");
-      lcd.print(med[x].getDosage());
-
-      CurrentWeight = scale1.get_units(), 10;// read the weight
-      CurrentWeight = abs(CurrentWeight);
-      Serial.print ("Current");
-      Serial.println(CurrentWeight);
-
-      delay (1000);
-      if (oldWeight - CurrentWeight > 0.30 ) { // (&& CurrentWeight > 0.20 ).20 is threshold if we use a medicne packet
-        Serial.println(" YOU HAVE TOOK YOUR MEDICINE !");  // .30 treshold for the diffrerance betweem each pill
-
-
-        //Wire.write(20);
-        //Wire.write(true);
-        //logSnd(HourInt);
-        break;
-      }
-
-      MinStr =  String(now.minute(), DEC); // Getting Minutes is save into String
-      MinInt = MinStr.toInt();
-      Serial.println (MinInt);
-      if (MinInt  - tempMin > 0) {
-        Serial.println (" Time passed and med has not taken");
-        // update on FB
-        break;
-      }
-    }
-
-    //*********************
-  } else if (ContainerNum == 1) {
-    oldWeight = scale2.get_units(), 10;// weight before the alarm
-    CurrentWeight = scale2.get_units(), 10;// weight after the user pick his medicine
-
-    tempMin = MinInt;
-    Serial.print("Temp");
-    Serial.println(tempMin);
-    while (true) {
-      AlarmTone();
-      now = rtc.now();
-      CurrentWeight = scale2.get_units(), 10;// read the weight
-      CurrentWeight = abs(CurrentWeight);
-      Serial.print ("Current");
-      Serial.println(CurrentWeight);
-      delay (1000);
-
-      if (oldWeight - CurrentWeight > 1 ) { // (&& CurrentWeight > 0.20 ).20 is threshold if we use a medicne packet
-        Serial.println(" YOU HAVE TOOK YOUR MEDICINE !");  // .30 treshold for the diffrerance betweem each pill
-
-        // update status on Firebase
-        // Wire.begin(10);
-        //Serial.println(HourInt);
-        // Wire.write(20);
-        // Wire.write(true);
-        // logSnd(HourInt);
-        break;
-      }
-
-      MinStr =  String(now.minute(), DEC); // Getting Minutes is save into String
-      MinInt = MinStr.toInt();
-      Serial.println (MinInt);
-      if (MinInt  - tempMin > 0) {
-        Serial.println (" Time passed and med has not taken");
-        // update on FB
-        break;
-      }
     }
   }
 }
