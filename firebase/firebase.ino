@@ -11,7 +11,7 @@
 int len; // store string lenght's to send it to arduino
 int takenTime = 0; // intiate the time
 int confirm = -1;// confirmation flag intiated with -1
-boolean flag ;
+int flag ;
 String medPath = "/Medicine";
 String contPath = "/Container";
 String dosPath = "/Dosage";
@@ -54,14 +54,16 @@ void setup() {
 
 void loop() {
 
-  flag = Firebase.getBool("/Flag"); // this flag will equal 1 when there is a new information in the firebase
+  flag = Firebase.getInt("/Flag"); // this flag will equal 1 when there is a new information in the firebase
   if (flag == 1) {
     SettingUp();
 
-    Firebase.setBool("/Flag", false);// set the flag into false after sending the data
-
+    Firebase.setInt("/Flag", 0);// set the flag into false after sending the data
+    Serial.print("inside");
 
   }
+  Serial.println(flag);
+  
 
   //  Wire.requestFrom(8, 4);
   //  while (Wire.available()) {
@@ -70,6 +72,7 @@ void loop() {
   //    Serial.println(takenTime);
   //    boolean state = Wire.read();
   //   // Firebase.pushInt("/taken", takenTime);
+  
   //}
 }
 
