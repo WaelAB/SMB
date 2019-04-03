@@ -25,7 +25,7 @@ void setup() {
 
   // connect to wifi.
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD); // connect to wifi using SSID and password
-  Serial.print("connecting");
+ Serial.print("connecting");
   while (WiFi.status() != WL_CONNECTED) { // wait untill the wifi connect
     Serial.print(".");//here will print dots untill the connection succes
     delay(500);
@@ -37,14 +37,11 @@ void setup() {
   Firebase.begin(FIREBASE_HOST, FIREBASE_AUTH); //connect to FireBase using the Host and authintication key for firebase website
 
   while (true) {// stuck in the loop until it recives confirmation that the data is delivered
-    Serial.println("confirm loop");
 
     SettingUp();
     delay(2000);
 
-    Serial.println("responce nested loop");
-    Serial.print("confirm: ");
-    Serial.println(confirm);
+    ReceivingValidation(0,confirm);
     if (confirm == 0) {// 0 is the confirmation number
       break;
     }
@@ -59,10 +56,10 @@ void loop() {
     SettingUp();
 
     Firebase.setInt("/Flag", 0);// set the flag into false after sending the data
-    Serial.print("inside");
+    
 
   }
-  Serial.println(flag);
+  
   
 
   //  Wire.requestFrom(8, 4);
@@ -115,20 +112,6 @@ void SettingUp() {
       Serial.println(Firebase.error());
     }
     Wire.write(containerNum);// send the container number to the arduino
-    Serial.print ("Container number ");
-    Serial.print(containerNum);
-
-    //  String MedName = Firebase.getString("/Medicine/Name");// get the medicine name from the firebase
-    //  if (Firebase.failed()) { // check for error
-    //    Serial.print("setting /number failed:");
-    //    Serial.println(Firebase.error());
-    //  }
-    //  len = MedName.length();// store the medicine name lenngth
-    //  Wire.write(len);// send the medicine name length to the arduino
-    //  for (int i = 0; i < len; i++) {
-    //    Wire.write(MedName.charAt(i));// sending character by character
-    //  }
-
 
     String dosPath2 = medPath + f + dosPath;
 
@@ -198,10 +181,25 @@ void SettingUp() {
     Wire.write(inStock);
   //  Serial.print(inStock);
 
-
+ 
 
 
     confirm = Wire.endTransmission();
   }
 
 }
+void ReceivingValidation(int expectedConfirm, int RealConfirm){
+  Serial.print("Expected Output = ");
+  Serial.println(expectedConfirm);
+  Serial.print("System generated Output= ");
+  Serial.println(RealConfirm);
+  
+  if (expectedConfirm == RealConfirm ){
+    Serial.println("Test receiving data passed");
+  }
+  else{
+    Serial.println("Test receiving data failed");
+  }
+  
+}
+
