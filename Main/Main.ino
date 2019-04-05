@@ -52,6 +52,8 @@ float ssss = 0.0;
 //--------------
 int GotIt = -1 ;// Message to esp initated with -1
 //--------------
+int AlarmToneReturn=0;
+int LedReturn=0;
 void setup() {
 
   Serial.begin(9600);// start serial for debug
@@ -121,7 +123,10 @@ void loop() {
             //            Serial.print("Temp");
             //            Serial.println(tempMin);
             while (true) {
-              AlarmTone();
+              AlarmToneReturn=AlarmTone();
+              digitalWrite(11,HIGH);
+//              LedReturn=Led(11);
+              //testAlarmLED(1,LedReturn,1,AlarmToneReturn);
               now = rtc.now();
               lcd.clear();
               lcd.setCursor(0, 0);// First digit , First line
@@ -145,6 +150,7 @@ void loop() {
                 lcd.print("YOUR MEDICINE !");
 
                 delay(1000);
+                digitalWrite(11,LOW);
                 //Wire.write(20);
                 //Wire.write(true);
                 //logSnd(HourInt);
@@ -176,7 +182,11 @@ void loop() {
             //            Serial.print("Temp");
             //            Serial.println(tempMin);
             while (true) {
-              AlarmTone();
+              AlarmToneReturn=AlarmTone();
+              LedReturn=Led(12);
+            //  testAlarmLED(1,LedReturn,1,AlarmToneReturn);
+              
+            digitalWrite(11,HIGH);
               now = rtc.now();
               lcd.clear();
               lcd.setCursor(0, 0);// First digit , First line
@@ -193,8 +203,15 @@ void loop() {
               delay (1000);
 
               if (oldWeight - CurrentWeight > 0.80) { // (&& CurrentWeight > 0.20 ).20 is threshold if we use a medicne packet
-               // Serial.println(" YOU HAVE TOOK YOUR MEDICINE !");  // .30 treshold for the diffrerance betweem each pill
+               lcd.clear();
+                lcd.setCursor(0, 0);
+                lcd.print("YOU HAVE TOOK ");  // .30 treshold for the diffrerance betweem each pill
+                lcd.setCursor(0, 1);
+                
+                lcd.print("YOUR MEDICINE !");
 
+                delay(1000);
+                digitalWrite(12,LOW);
                 // update status on Firebase
                 // Wire.begin(10);
                 //Serial.println(HourInt);
@@ -232,7 +249,7 @@ void loop() {
         outOfStock = scale1.get_units(), 10;
         if (outOfStock < 0.20) {
           med[x].setStockState(false);
-
+          LedReturn=Led(13);
           lcd.clear();
           lcd.setCursor(0, 0);
           lcd.print("Your medicine ");
@@ -247,6 +264,7 @@ void loop() {
       } else if (med[x].getContainerNum() == 1) {
         outOfStock = scale2.get_units(), 10;
         if (outOfStock < 0.80) {
+          LedReturn=Led(13);
           med[x].setStockState(false);
 
           lcd.clear();
@@ -434,7 +452,7 @@ void SettingUp() {
 }
 //------------------------------------------------------------
 
-void AlarmTone() { //this method will activate the buzzer and play a tone
+int AlarmTone() { //this method will activate the buzzer and play a tone
   tone(buzzer, 1000);//Play a tone for pin 4 1000 Hz
   delay(500);
   tone(buzzer, 1500);//Play a tone for pin 4 1500 Hz
@@ -442,6 +460,7 @@ void AlarmTone() { //this method will activate the buzzer and play a tone
   tone(buzzer, 2000);//Play a tone for pin 4 2000 Hz
   delay(500);
   noTone(buzzer);//Stop the tone
+  return 1;
 }
 //------------------------------------------------------------
 /*
@@ -449,4 +468,31 @@ void AlarmTone() { //this method will activate the buzzer and play a tone
   Wire.write(20);
   Wire.write(true);
   }
+  
 */
+int Led(int pin){
+   digitalWrite(pin,HIGH);
+  delay(500);
+  digitalWrite(pin,LOW);
+  delay(500);
+  return 1;
+}
+//void testAlarmLED(int expectedLED,int RealLED, int expectedAlarm ,int RealAlarm){
+//  
+//  Serial.print("Expected LED Output = ");
+//  Serial.println(expectedLED);
+//  Serial.print("Real LED Output= ");
+//  Serial.println(RealLED);
+//
+//  Serial.print("Expected Alarm Output = ");
+//  Serial.println(expectedAlarm);
+//  Serial.print("Real Alarm Output= ");
+//  Serial.println(RealAlarm);
+//  
+//  if (RealLED == RealAlarm ){
+//    Serial.println("Test LED & Alarm passed");
+//  }
+//  else{
+//    Serial.println("Test LED & Alarm failed");
+//  }
+//}

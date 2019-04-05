@@ -188,18 +188,17 @@ void SettingUp() {
   }
 
 }
-void ReceivingValidation(int expectedConfirm, int RealConfirm){
-  Serial.print("Expected Output = ");
-  Serial.println(expectedConfirm);
-  Serial.print("System generated Output= ");
-  Serial.println(RealConfirm);
-  
-  if (expectedConfirm == RealConfirm ){
-    Serial.println("Test receiving data passed");
-  }
-  else{
-    Serial.println("Test receiving data failed");
-  }
-  
-}
-
+//void ReceivingValidation(int expectedConfirm, int RealConfirm){
+//  Serial.print("Expected Output = ");
+//  Serial.println(expectedConfirm);
+//  Serial.print("System generated Output= ");
+//  Serial.println(RealConfirm);
+//  
+//  if (expectedConfirm == RealConfirm ){
+//    Serial.println("Test receiving data passed");
+//  }
+//  else{
+//    Serial.println("Test receiving data failed");
+//  }
+//  
+//}
