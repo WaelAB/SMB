@@ -5,8 +5,8 @@
 // Set these to run example.
 #define FIREBASE_HOST "smb-499-8a7d2.firebaseio.com" // DataBase Host Name
 #define FIREBASE_AUTH "XGKBIJ5TbwDq6aCXF85J2pe77VhcpVXVTohI0uzZ" //token to acceses the DB
-#define WIFI_SSID "Albarakati" // name of the router 
-#define WIFI_PASSWORD "wab14161416" // password of the router
+#define WIFI_SSID "WaelAB" // name of the router 
+#define WIFI_PASSWORD "12345678" // password of the router
 
 int len; // store string lenght's to send it to arduino
 int takenTime = 0; // intiate the time
@@ -41,7 +41,7 @@ void setup() {
     SettingUp();
     delay(2000);
 
-    ReceivingValidation(0,confirm);
+//    ReceivingValidation(0,confirm);
     if (confirm == 0) {// 0 is the confirmation number
       break;
     }
