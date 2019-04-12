@@ -383,7 +383,7 @@ void SettingUp() {
     lcd.setCursor(0, 1);
     lcd.print(" a medicine ");
     lcd.print( i + 1 );
-    
+
 
     if (med[i].getContainerNum() == 0) {// For the first container
       digitalWrite(11, HIGH);
@@ -397,9 +397,11 @@ void SettingUp() {
         if (units1 < 0)
         {
           units1 = 0.00;// to avoid getting minus weight values
-          digitalWrite(11, LOW);
+
         }
+        
       }
+      digitalWrite(11, LOW);
     } else if (med[i].getContainerNum() == 1) {//for the second container
       digitalWrite(12, HIGH);
       scale2.set_scale(calibration_factor2); //Adjust to this calibration factor
@@ -412,9 +414,10 @@ void SettingUp() {
         if (units2 < 0)
         {
           units2 = 0.00;// to avoid getting minus weight values
-          digitalWrite(12, LOW);
         }
+        
       }
+      digitalWrite(12, LOW);
     }
     lcd.clear();
     lcd.setCursor(0, 0);
